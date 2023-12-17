@@ -1,0 +1,257 @@
+<robot name="zebra_zero">
+  <link name="base_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.1"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.5" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <link name="world"/>
+  <joint name="base_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin rpy="0 1.57 -1.57" xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <link name="first_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <geometry>
+        <box size="0.25 0.5 0.5"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.35 0.7 0.7"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="first_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="first_link"/>
+    <origin rpy="1.57 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <!-- TODO: Fix this -->
+    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+  </joint>
+  <link name="second_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <geometry>
+        <cylinder length="0.35" radius="0.1"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.35" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="second_joint" type="revolute">
+    <parent link="first_link"/>
+    <child link="second_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.4"/>
+    <axis xyz="0 1 0"/>
+    <!-- TODO: Fix this -->
+    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+  </joint>
+  <link name="third_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <geometry>
+        <cylinder length="0.35" radius="0.1"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <geometry>
+        <cylinder length="0.35" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="third_joint" type="revolute">
+    <parent link="second_link"/>
+    <child link="third_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.35"/>
+    <axis xyz="0 1 0"/>
+    <!-- TODO: Fix this -->
+    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+  </joint>
+  <link name="fourth_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.05" radius="0.1"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.5" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="fourth_joint" type="revolute">
+    <parent link="third_link"/>
+    <child link="fourth_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.35"/>
+    <axis xyz="0 0 1"/>
+    <!-- TODO: Fix this -->
+    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+  </joint>
+  <link name="fifth_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.15" radius="0.1"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.5" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="fifth_joint" type="revolute">
+    <parent link="fourth_link"/>
+    <child link="fifth_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.1"/>
+    <axis xyz="0 1 0"/>
+    <!-- TODO: Fix this -->
+    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+  </joint>
+  <link name="sixth_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.1" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="sixth_joint" type="revolute">
+    <parent link="fifth_link"/>
+    <child link="sixth_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.1"/>
+    <axis xyz="0 0 1"/>
+    <!-- TODO: Fix this -->
+    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+  </joint>
+
+  <ros2_control name="zebra_zero" type="system">
+    <hardware>
+      <plugin>zebra_zero/RobotSystem</plugin>
+    </hardware>
+    <joint name="first_joint">
+      <command_interface name="position">
+        <param name="min">{-pi}</param>
+        <param name="max">{pi}</param>
+      </command_interface>
+      <!-- additional command interfaces ... -->
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <!-- additional state interfaces ... -->
+    </joint>
+    <joint name="second_joint">
+      <command_interface name="position">
+        <param name="min">{-pi/2 + 0.5}</param>
+        <param name="max">0.5</param>
+      </command_interface>
+      <!-- additional command interfaces ... -->
+      <state_interface name="position">
+        <param name="initial_value">{-pi/2}</param>
+      </state_interface>
+      <!-- additional state interfaces ... -->
+    </joint>
+      <joint name="third_joint">
+      <command_interface name="position">
+        <param name="min">{-pi/2 + 0.5}</param>
+        <param name="max">{pi/2}</param>
+      </command_interface>
+      <!-- additional command interfaces ... -->
+      <state_interface name="position">
+        <param name="initial_value">{-pi/2}</param>
+      </state_interface>
+      <!-- additional state interfaces ... -->
+    </joint>
+    <joint name="fourth_joint">
+      <command_interface name="position">
+        <param name="min">{-pi}</param>
+        <param name="max">{pi}</param>
+      </command_interface>
+      <!-- additional command interfaces ... -->
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <!-- additional state interfaces ... -->
+    </joint>
+    <joint name="fifth_joint">
+      <command_interface name="position">
+        <param name="min">{-pi}</param>
+        <param name="max">{pi}</param>
+      </command_interface>
+      <!-- additional command interfaces ... -->
+      <state_interface name="position">
+        <param name="initial_value">{pi/2}</param>
+      </state_interface>
+      <!-- additional state interfaces ... -->
+    </joint>
+    <joint name="sixth_joint">
+      <command_interface name="position">
+        <param name="min">{-pi}</param>
+        <param name="max">{pi}</param>
+      </command_interface>
+      <!-- additional command interfaces ... -->
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <!-- additional state interfaces ... -->
+    </joint>
+    <!-- additional joints ...-->
+    <!-- additional hardware/sensors ...-->
+  </ros2_control>
+</robot>

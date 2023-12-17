@@ -1,0 +1,28 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 10  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    zebra_zero:
+      type: position_controllers/JointGroupPositionController # zebra_zero/RobotController
+
+
+zebra_zero:
+  ros__parameters:
+    joints:
+      - first_joint
+      - second_joint
+      - third_joint
+      - fourth_joint
+      - fifth_joint
+      - sixth_joint
+
+    command_interfaces:
+      - position
+      - velocity
+
+    state_interfaces:
+      - position
+      - velocity
