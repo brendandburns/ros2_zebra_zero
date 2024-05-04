@@ -9,6 +9,7 @@ class Servo : public Module {
         ~Servo() {}
 
         int read();
+        void write(int pos);
 };
 
 #endif // __SERVO_H__

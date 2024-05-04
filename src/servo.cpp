@@ -12,3 +12,8 @@ int Servo::read() {
     NmcNoOp(this->_index);
     return ServoGetPos(this->_index);
 }
+
+void Servo::write(int pos) {
+    // TODO: something here...
+    // printf("Setting position to %d\n", pos);
+}

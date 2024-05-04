@@ -44,12 +44,12 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, robot_controllers],
+        # parameters=[robot_description, robot_controllers],
+        parameters=[robot_controllers],
         remappings=[
-            (
-                "/forward_position_controller/commands",
-                "/position_commands",
-            ),
+            ("/forward_position_controller/commands", "/position_commands"),
+            # See https://github.com/ros-controls/ros2_control/issues/1262
+            ("~/robot_description", "robot_description"),
         ],
         output="both",
     )

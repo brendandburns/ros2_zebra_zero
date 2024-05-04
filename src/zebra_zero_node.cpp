@@ -3,8 +3,6 @@
 
 class MyNode : public rclcpp::Node
 {
-private:
-    NmcBus *bus;
 public:
     MyNode() : Node("my_node_name")
     {
@@ -13,9 +11,6 @@ public:
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(200),
             std::bind(&MyNode::timerCallback, this));
-
-        bus = new NmcBus("/dev/ttyUSB0", 19200);
-        bus->init();
     }
 
 private:

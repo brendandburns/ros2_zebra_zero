@@ -24,28 +24,41 @@ set(DEPS
   controller_interface
   realtime_tools
   trajectory_msgs
+  rclcpp
 )
 
 foreach(Dependency IN ITEMS ${DEPS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
+#add_library(nmc
+#            SHARED
+#            libnmc/nmccom.cpp
+#            libnmc/picio.cpp
+#            libnmc/picservo.cpp
+#            libnmc/picstep.cpp
+#            libnmc/sio_util.cpp
+#            )
+add_library(nmc STATIC IMPORTED)
+set_target_properties(nmc PROPERTIES IMPORTED_LOCATION /home/bburns/src/libnmc/libnmc.a)
+
 add_library(
     zebra_zero
     SHARED
+    src/nmc.cpp
+    src/servo.cpp
     src/hardware.cpp
     src/controller.cpp
 )
 ament_target_dependencies(zebra_zero PUBLIC ${DEPS})
+target_link_libraries(zebra_zero PUBLIC nmc)
 
 find_package(rclcpp REQUIRED)
 add_executable(zebra_zero_node
-               src/nmc.cpp
-               src/servo.cpp
                src/zebra_zero_node.cpp)
 ament_target_dependencies(zebra_zero_node rclcpp)
 
-target_link_libraries(zebra_zero_node -lnmc)
+# target_link_libraries(zebra_zero /home/bburns/src/libnmc/libnmc.a)
 
 pluginlib_export_plugin_description_file(hardware_interface zebra_zero.xml)
 pluginlib_export_plugin_description_file(controller_interface zebra_zero.xml)

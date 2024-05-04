@@ -1,4 +1,7 @@
+#include "rclcpp/rclcpp.hpp"
+
 #include "hardware.h"
+#include "servo.h"
 
 namespace zebra_zero
 {
@@ -8,9 +11,16 @@ namespace zebra_zero
         {
             return CallbackReturn::ERROR;
         }
-        // setup communication with robot hardware
-        // ...
+        nmc = new NmcBus("/dev/ttyUSB0", 19200);
+        modules_ = nmc->init();
+        if (modules_ == 0) {
+            RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Found no NMC modules. Check that Robot is powered on.");        
+            return CallbackReturn::ERROR;
+        }
+        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Found: %d modules", modules_);
 
+        home_position_.assign(6, 0);
+        home_position_[4] = M_PI; 
         joint_position_.assign(6, 0);
         joint_position_command_.assign(6, 0);
         joint_velocity_.assign(6, 0);
@@ -62,15 +72,69 @@ namespace zebra_zero
 
     return_type RobotSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period)
     {
-        // read hardware values for state interfaces, e.g joint encoders and sensor readings
-        // ...
+        // TODO: move this into the constructor
+        std::vector<int> encoders;
+        encoders.assign(6, 0);
+
+        for (int i = 0; i < modules_; i++) {
+            Servo* servo = (Servo*) nmc->module(i);
+            encoders[i] = servo->read();
+        }
+        for (int i = 0; i < 3; i++) {
+            joint_position_[i] = (encoders[i] / 30557.75) + home_position_[i];
+        }
+        double ec3 = encoders[3] * 17.33 / 24.0;
+        double ec4 = encoders[4] * 17.33 / 24.0;
+        double ec5 = encoders[5] * 17.33 / 24.0;
+
+        joint_position_[3] = ec3 / 11034.53 - encoders[2] / 20371.83 + home_position_[3];
+        joint_position_[4] = ec5 / 22069.06 + ec4 / 44138.12 + encoders[2] / 27162.44 + home_position_[4];
+        joint_position_[5] = ec5 / 11034.53 - ec4 / 22069.06 + ec3 / 11034.53 - encoders[2] / 40743.68 + home_position_[5];
+
         return return_type::OK;
     }
 
     return_type RobotSystem::write(const rclcpp::Time &time, const rclcpp::Duration &period)
     {
-        // send command interface values to hardware, e.g joint set joint velocity
-        // ...
+        std::vector<int> encoder;
+        encoder.assign(6, 0);
+        for (int i = 0; i < 3; i++) {
+            encoder[i] = joint_position_command_[i] - home_position_[i] * 30557.75;
+        }
+
+        double temp3 = 16551.79 * (joint_position_command_[2] - home_position_[2]);
+        double temp4 = 11034.53 * (joint_position_command_[3] - home_position_[3]);
+
+        encoder[3] = temp3 + temp4;
+        encoder[4] = -temp3 + temp4 + 22069.06 * (joint_position_command_[4] - home_position_[4]) - 11034.53 * (joint_position_command_[5] - home_position_[5]);
+        encoder[5] = -temp3 + 11034.53 * (joint_position_command_[4] - home_position_[4]) + 5517.265 * (home_position_[3] - joint_position_command_[3] + joint_position_command_[5] - home_position_[5]);
+
+        encoder[3] = encoder[3] * 24.0 / 17.33;
+        encoder[4] = encoder[4] * 24.0 / 17.33;
+        encoder[5] = encoder[5] * 24.0 / 17.33;
+
+        for (int i = 0; i < modules_; i++) {
+            ((Servo*) nmc->module(i))->write(encoder[i]);
+        }
+
+        /*
+        encoder = [0, 0, 0, 0, 0, 0]
+
+        encoder[0] = (angles[0] - Arm.ANGLE_AT_HOME[0]) * 30557.75
+        encoder[1] = (angles[1] - Arm.ANGLE_AT_HOME[1]) * 30557.75
+        encoder[2] = (angles[2] - Arm.ANGLE_AT_HOME[2]) * 30557.75
+
+        temp3 = 16551.79 * (angles[2] - Arm.ANGLE_AT_HOME[2])
+        temp4 = 11034.53 * (angles[3] - Arm.ANGLE_AT_HOME[3])
+
+        encoder[3] = temp3 + temp4
+        encoder[4] = -temp3 + temp4 + 22069.06 * (angles[4] - Arm.ANGLE_AT_HOME[4]) - 11034.53 * (angles[5] - Arm.ANGLE_AT_HOME[5])
+        encoder[5] = -temp3 + 11034.53 * (angles[4] - Arm.ANGLE_AT_HOME[4]) + 5517.265 * (Arm.ANGLE_AT_HOME[3] - angles[3] + angles[5] - Arm.ANGLE_AT_HOME[5])
+
+        encoder[3] = encoder[3] * 24.0 / 17.33
+        encoder[4] = encoder[4] * 24.0 / 17.33
+        encoder[5] = encoder[5] * 24.0 / 17.33
+        */
         return return_type::OK;
     }
 

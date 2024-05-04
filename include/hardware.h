@@ -5,6 +5,7 @@
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
+#include "nmc.h"
 
 using hardware_interface::return_type;
 
@@ -16,6 +17,7 @@ namespace zebra_zero
     class HARDWARE_INTERFACE_PUBLIC RobotSystem : public hardware_interface::SystemInterface
     {
     private:
+        std::vector<double> home_position_;
         std::vector<double> joint_position_;
         std::vector<double> joint_position_command_;
         std::vector<double> joint_velocity_;
@@ -24,6 +26,9 @@ namespace zebra_zero
 
         std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
             {"position", {}}, {"velocity", {}}};
+
+        NmcBus* nmc;
+        int     modules_;
 
     public:
         CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
