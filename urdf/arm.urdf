@@ -3,7 +3,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <sphere radius="0.1"/>
+        <box size="0.3 0.1 0.6" />
       </geometry>
     </visual>
     <collision>
@@ -26,9 +26,10 @@
   </joint>
   <link name="first_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <origin rpy="0 0 1.57" xyz="0.08 -0.1 -0.1"/>
       <geometry>
-        <box size="0.25 0.5 0.5"/>
+        <mesh filename="ZebraBase.stl" scale="0.01 0.01 0.01"/>
+        <!-- <box size="0.25 0.5 0.5"/> -->
       </geometry>
       <material name="blue">
         <color rgba="0 1.0 1.0 1.0"/>
@@ -55,9 +56,10 @@
   </joint>
   <link name="second_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <origin rpy="-1.175 0 1.57" xyz="0.67 -0.1 0"/>
       <geometry>
-        <cylinder length="0.35" radius="0.1"/>
+        <mesh filename="ZebraLinkOne.stl" scale="0.01 0.01 0.01"/>
+        <!-- <cylinder length="0.35" radius="0.1"/> -->
       </geometry>
     </visual>
     <collision>
@@ -74,22 +76,24 @@
   <joint name="second_joint" type="revolute">
     <parent link="first_link"/>
     <child link="second_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.25"/>
+    <origin rpy="0 0 0" xyz="0 0 0.45"/>
     <axis xyz="0 1 0"/>
     <!-- TODO: Fix this -->
     <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
   </joint>
   <link name="third_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <origin rpy="3.14 0 1.57" xyz="0.42 -0.1 0.92"/>
       <geometry>
-        <cylinder length="0.35" radius="0.1"/>
+        <mesh filename="ZebraLinkTwo.stl" scale="0.01 0.01 0.01"/>
+        <!-- <cylinder length="0.35" radius="0.1"/> -->
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0.25"/>
       <geometry>
-        <cylinder length="0.35" radius="0.05"/>
+        <mesh filename="ZebraLinkTwo.stl" scale="0.01 0.01 0.01"/>
+        <!-- <cylinder length="0.35" radius="0.05"/> -->
       </geometry>
     </collision>
     <inertial>
@@ -100,7 +104,7 @@
   <joint name="third_joint" type="revolute">
     <parent link="second_link"/>
     <child link="third_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.35"/>
+    <origin rpy="0 0 0" xyz="0 0 0.60"/>
     <axis xyz="0 1 0"/>
     <!-- TODO: Fix this -->
     <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
@@ -109,7 +113,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.1"/>
+        <cylinder length="0.05" radius="0.075"/>
       </geometry>
     </visual>
     <collision>
@@ -126,16 +130,17 @@
   <joint name="fourth_joint" type="revolute">
     <parent link="third_link"/>
     <child link="fourth_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.35"/>
+    <origin rpy="0 0 0" xyz="0 0 0.45"/>
     <axis xyz="0 0 1"/>
     <!-- TODO: Fix this -->
     <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
   </joint>
   <link name="fifth_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.095 0.415 -0.4"/>
       <geometry>
-        <cylinder length="0.15" radius="0.1"/>
+        <mesh filename="ZebraLinkThree.stl" scale="0.01 0.01 0.01"/>
+        <!-- <cylinder length="0.15" radius="0.1"/> -->
       </geometry>
     </visual>
     <collision>
@@ -152,16 +157,16 @@
   <joint name="fifth_joint" type="revolute">
     <parent link="fourth_link"/>
     <child link="fifth_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.1"/>
+    <origin rpy="0 0 0" xyz="0 0 0.05"/>
     <axis xyz="0 1 0"/>
     <!-- TODO: Fix this -->
-    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+    <limit effort="30" velocity="1.0" lower="-2.2" upper="2.2" />
   </joint>
   <link name="sixth_link">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <box size="0.2 0.2 0.2"/>
+        <cylinder length="0.05" radius="0.075"/>
       </geometry>
     </visual>
     <collision>
