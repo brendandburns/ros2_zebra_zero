@@ -69,7 +69,7 @@ install(TARGETS
 )
 
 install(
-  DIRECTORY launch config
+  DIRECTORY launch config urdf
   DESTINATION share/zebra_zero
 )
 

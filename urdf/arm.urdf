@@ -28,7 +28,7 @@
     <visual>
       <origin rpy="0 0 1.57" xyz="0.08 -0.1 -0.1"/>
       <geometry>
-        <mesh filename="ZebraBase.stl" scale="0.01 0.01 0.01"/>
+        <mesh filename="package://zebra_zero/urdf/ZebraBase.stl" scale="0.01 0.01 0.01"/>
         <!-- <box size="0.25 0.5 0.5"/> -->
       </geometry>
       <material name="blue">
@@ -58,7 +58,7 @@
     <visual>
       <origin rpy="-1.175 0 1.57" xyz="0.67 -0.1 0"/>
       <geometry>
-        <mesh filename="ZebraLinkOne.stl" scale="0.01 0.01 0.01"/>
+        <mesh filename="package://zebra_zero/urdf/ZebraLinkOne.stl" scale="0.01 0.01 0.01"/>
         <!-- <cylinder length="0.35" radius="0.1"/> -->
       </geometry>
     </visual>
@@ -85,7 +85,7 @@
     <visual>
       <origin rpy="3.14 0 1.57" xyz="0.42 -0.1 0.92"/>
       <geometry>
-        <mesh filename="ZebraLinkTwo.stl" scale="0.01 0.01 0.01"/>
+        <mesh filename="package://zebra_zero/urdf/ZebraLinkTwo.stl" scale="0.01 0.01 0.01"/>
         <!-- <cylinder length="0.35" radius="0.1"/> -->
       </geometry>
     </visual>
@@ -139,7 +139,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="-0.095 0.415 -0.4"/>
       <geometry>
-        <mesh filename="ZebraLinkThree.stl" scale="0.01 0.01 0.01"/>
+        <mesh filename="package://zebra_zero/urdf/ZebraLinkThree.stl" scale="0.01 0.01 0.01"/>
         <!-- <cylinder length="0.15" radius="0.1"/> -->
       </geometry>
     </visual>

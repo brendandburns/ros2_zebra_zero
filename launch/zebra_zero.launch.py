@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
@@ -25,8 +27,12 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    # TODO: fix this properly
-    robot_description_content = open('/home/bburns/ros2/dev_ws/zebra_zero/arm.urdf','r').read()
+    robot_description_file = os.path.join(
+            get_package_share_directory('zebra_zero'),
+            'urdf',
+            'arm.urdf')
+
+    robot_description_content = open(robot_description_file,'r').read()
  
     robot_description = {"robot_description": robot_description_content}
 
