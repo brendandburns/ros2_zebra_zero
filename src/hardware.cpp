@@ -139,6 +139,8 @@ namespace zebra_zero
 
     return_type RobotSystem::write(__attribute__ ((unused)) const rclcpp::Time &time, __attribute__ ((unused)) const rclcpp::Duration &period)
     {
+        move_direct();
+        // move_path();
 
         return return_type::OK;
     }
