@@ -67,6 +67,24 @@ namespace zebra_zero
         return CallbackReturn::SUCCESS;
     }
 
+    CallbackReturn RobotSystem::on_activate(const rclcpp_lifecycle::State& previous_state) override
+    {
+        if (hardware_interface::SystemInterface::on_activate(info) != CallbackReturn::SUCCESS)
+        {
+            return CallbackReturn::ERROR;
+        }
+        return CallbackReturn::SUCCESS;
+    }
+
+    CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
+    {
+        if (hardware_interface::SystemInterface::on_deactivate(info) != CallbackReturn::SUCCESS)
+        {
+            return CallbackReturn::ERROR;
+        }
+        return CallbackReturn::SUCCESS;
+    }
+
     std::vector<hardware_interface::StateInterface> RobotSystem::export_state_interfaces()
     {
         std::vector<hardware_interface::StateInterface> state_interfaces;

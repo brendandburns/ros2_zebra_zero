@@ -22,7 +22,7 @@ namespace zebra_zero
         std::vector<double> joint_position_command_;
         std::vector<double> joint_velocity_;
         std::vector<double> joint_velocity_command_;
-
+        std::string hw_command_mode_;
 
         std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
             {"position", {}}, {"velocity", {}}};
@@ -32,7 +32,8 @@ namespace zebra_zero
 
     public:
         CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
-
+        CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
+        CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
         hardware_interface::CallbackReturn on_shutdown(const rclcpp_lifecycle::State& previous_state) override;
 
