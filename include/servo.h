@@ -6,10 +6,11 @@
 class Servo : public Module {
     public:
         Servo(int index);
-        ~Servo() {}
+        ~Servo();
 
         int read();
-        void write(int pos);
+        void write(int pos, int velocity, int acceleration);
+        bool zero();
 };
 
 #endif // __SERVO_H__

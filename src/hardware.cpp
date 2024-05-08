@@ -5,6 +5,24 @@
 
 namespace zebra_zero
 {
+    int velocity_list[] = {
+        100000,
+        100000,
+        100000,
+        100000,
+        200000,
+        100000,
+    };
+
+    int acceleration_list[] = {
+        10000,
+        10000,
+        10000,
+        10000,
+        20000,
+        10000,
+    };
+
     CallbackReturn RobotSystem::on_init(const hardware_interface::HardwareInfo &info)
     {
         if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
@@ -19,8 +37,16 @@ namespace zebra_zero
         }
         RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Found: %d modules", modules_);
 
+        for (int i = 0; i < modules_; i++) {
+            Servo* servo = (Servo*) nmc->module(i);
+            if (!servo->zero()) {
+                RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to zero module %d", i);
+            }
+        }
+
         home_position_.assign(6, 0);
-        home_position_[4] = M_PI; 
+        // TODO: setup home here.
+        // home_position_[4] = M_PI; 
         joint_position_.assign(6, 0);
         joint_position_command_.assign(6, 0);
         joint_velocity_.assign(6, 0);
@@ -80,6 +106,8 @@ namespace zebra_zero
             Servo* servo = (Servo*) nmc->module(i);
             encoders[i] = servo->read();
         }
+        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "encoders: %d %d %d", encoders[3], encoders[4], encoders[5]);
+
         for (int i = 0; i < 3; i++) {
             joint_position_[i] = (encoders[i] / 30557.75) + home_position_[i];
         }
@@ -98,8 +126,9 @@ namespace zebra_zero
     {
         std::vector<int> encoder;
         encoder.assign(6, 0);
+        
         for (int i = 0; i < 3; i++) {
-            encoder[i] = joint_position_command_[i] - home_position_[i] * 30557.75;
+            encoder[i] = (joint_position_command_[i] - home_position_[i]) * 30557.75;
         }
 
         double temp3 = 16551.79 * (joint_position_command_[2] - home_position_[2]);
@@ -114,7 +143,7 @@ namespace zebra_zero
         encoder[5] = encoder[5] * 24.0 / 17.33;
 
         for (int i = 0; i < modules_; i++) {
-            ((Servo*) nmc->module(i))->write(encoder[i]);
+            ((Servo*) nmc->module(i))->write(encoder[i], velocity_list[i], acceleration_list[i]);
         }
 
         /*
@@ -138,7 +167,13 @@ namespace zebra_zero
         return return_type::OK;
     }
 
+    hardware_interface::CallbackReturn RobotSystem::on_shutdown(const rclcpp_lifecycle::State& previous_state) {
+        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Shutting down Zebra Zero");
+
+        delete(this->nmc);
+    }
 }
+
 
 #include "pluginlib/class_list_macros.hpp"
 
