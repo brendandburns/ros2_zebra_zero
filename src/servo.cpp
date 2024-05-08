@@ -61,6 +61,11 @@ bool Servo::zero()
     return ServoResetPos(this->_index);
 }
 
+void Servo::initPath()
+{
+    ServoInitPath(this->_index);
+}
+
 bool Servo::setPath(const std::vector<long> &path) {
     if (path.size() > 128) {
         return false;

@@ -2,6 +2,7 @@
 #include "servo.h"
 #include "stepper.h"
 #include "nmccom.h"
+#include "picservo.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -33,3 +34,18 @@ unsigned int NmcBus::init() {
 
 const std::vector<Module*>& NmcBus::modules() { return this->_modules; }
 const Module* NmcBus::module(int ix) { return this->_modules[ix]; }
+
+void NmcBus::initPath()
+{
+    for (size_t i = 0; i < this->_modules.size(); i++) {
+        if (this->_modules[i]->type() == ModuleType::SERVO)
+        {
+            ((Servo*)this->_modules[i])->initPath();
+        }
+    }
+}
+
+bool NmcBus::startPath()
+{
+    return ServoStartPathMode(0xFF, 1);
+}

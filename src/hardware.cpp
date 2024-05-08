@@ -31,23 +31,26 @@ namespace zebra_zero
         }
         nmc = new NmcBus("/dev/ttyUSB0", 19200);
         modules_ = nmc->init();
-        if (modules_ == 0) {
-            RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Found no NMC modules. Check that Robot is powered on.");        
+        if (modules_ == 0)
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Found no NMC modules. Check that Robot is powered on.");
             return CallbackReturn::ERROR;
         }
         RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Found: %d modules", modules_);
 
-        for (int i = 0; i < modules_; i++) {
-            Servo* servo = (Servo*) nmc->module(i);
-            if (!servo->zero()) {
+        for (int i = 0; i < modules_; i++)
+        {
+            Servo *servo = (Servo *)nmc->module(i);
+            if (!servo->zero())
+            {
                 RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to zero module %d", i);
             }
         }
 
         home_position_.assign(6, 0);
-        home_position_[1] = M_PI/2;
-        home_position_[2] = -M_PI/2;
-        home_position_[4] = -M_PI/2;
+        home_position_[1] = M_PI / 2;
+        home_position_[2] = -M_PI / 2;
+        home_position_[4] = -M_PI / 2;
 
         joint_position_.assign(6, 0);
         joint_position_command_ = home_position_;
@@ -98,14 +101,15 @@ namespace zebra_zero
         return command_interfaces;
     }
 
-    return_type RobotSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period)
+    return_type RobotSystem::read(__attribute__ ((unused)) const rclcpp::Time &time, __attribute__ ((unused)) const rclcpp::Duration &period)
     {
         // TODO: move this into the constructor
         std::vector<int> encoders;
         encoders.assign(6, 0);
 
-        for (int i = 0; i < modules_; i++) {
-            Servo* servo = (Servo*) nmc->module(i);
+        for (int i = 0; i < modules_; i++)
+        {
+            Servo *servo = (Servo *)nmc->module(i);
             encoders[i] = servo->read();
         }
         RCLCPP_DEBUG(rclcpp::get_logger("ZebraZeroHardware"), "encoders: %d %d %d", encoders[3], encoders[4], encoders[5]);
@@ -115,31 +119,25 @@ namespace zebra_zero
         return return_type::OK;
     }
 
-    return_type RobotSystem::write(const rclcpp::Time &time, const rclcpp::Duration &period)
+    return_type RobotSystem::write(__attribute__ ((unused)) const rclcpp::Time &time, __attribute__ ((unused)) const rclcpp::Duration &period)
     {
-        std::vector<int> encoder;
-        encoder.assign(6, 0);
-        
-        this->angles_to_encoders(this->joint_position_command_, encoder);
-        
-        for (int i = 0; i < modules_; i++) {
-            ((Servo*) nmc->module(i))->write(encoder[i], velocity_list[i], acceleration_list[i]);
-        }
 
         return return_type::OK;
     }
 
-    hardware_interface::CallbackReturn RobotSystem::on_shutdown(const rclcpp_lifecycle::State& previous_state) {
+    hardware_interface::CallbackReturn RobotSystem::on_shutdown(__attribute__ ((unused)) const rclcpp_lifecycle::State &previous_state)
+    {
         RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Shutting down Zebra Zero");
 
-        delete(this->nmc);
+        delete (this->nmc);
 
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
     void RobotSystem::encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles)
-    {   
-        for (int i = 0; i < 3; i++) {
+    {
+        for (int i = 0; i < 3; i++)
+        {
             angles[i] = (encoders[i] / 30557.75) + this->home_position_[i];
         }
         double ec3 = encoders[3]; // * 17.33 / 24.0;
@@ -149,12 +147,12 @@ namespace zebra_zero
         angles[3] = ec3 / 11034.53 - encoders[2] / 20371.83 + this->home_position_[3];
         angles[4] = ec5 / 22069.06 + ec4 / 44138.12 + encoders[2] / 27162.44 + this->home_position_[4];
         angles[5] = ec5 / 11034.53 - ec4 / 22069.06 + ec3 / 11034.53 - encoders[2] / 40743.68 + this->home_position_[5];
-        
     }
 
     void RobotSystem::angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders)
     {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++)
+        {
             encoders[i] = (angles[i] - home_position_[i]) * 30557.75;
         }
 
@@ -163,12 +161,55 @@ namespace zebra_zero
 
         encoders[3] = temp3 + temp4;
         encoders[4] = -temp3 + temp4 + 22069.06 * (angles[4] - home_position_[4]) - 11034.53 * (angles[5] - home_position_[5]);
-        encoders[5] = -temp3 + 11034.53 * (angles[4] - home_position_[4])
-            + 5517.265 * (home_position_[3] - angles[3] + angles[5] - home_position_[5]);
+        encoders[5] = -temp3 + 11034.53 * (angles[4] - home_position_[4]) + 5517.265 * (home_position_[3] - angles[3] + angles[5] - home_position_[5]);
+    }
+
+    void RobotSystem::move_direct()
+    {
+        std::vector<int> encoder;
+        encoder.assign(6, 0);
+
+        this->angles_to_encoders(this->joint_position_command_, encoder);
+
+        for (int i = 0; i < modules_; i++)
+        {
+            ((Servo *)nmc->module(i))->write(encoder[i], velocity_list[i], acceleration_list[i]);
+        }
+    }
+
+    void RobotSystem::move_path(int point_count)
+    {
+        std::vector<int> encoder;
+        encoder.assign(6, 0);
+
+        std::vector<double> point;
+        point.assign(6, 0);
+
+        std::vector<long> paths[6];
+
+        nmc->initPath();
+        for (int joint = 0; joint < 6; joint++) {
+            paths[joint].assign(point_count, 0);
+        }
+
+        for (int p = 1; p <= point_count; p++) {
+            for (int joint = 0; joint < 6; joint++) {
+                double delta = (joint_position_command_[joint] - joint_position_[joint]);
+                point[joint] = joint_position_[joint] + (delta * p) / point_count;
+            }
+            this->angles_to_encoders(point, encoder);
+            for (int joint = 0; joint < 6; joint++) {
+                paths[joint][p] = encoder[joint];
+            }
+        }
+
+        for (int joint = 0; joint < 6; joint++) {
+            ((Servo *)nmc->module(joint))->setPath(paths[joint]);
+        }
+        nmc->startPath();
     }
 
 }
-
 
 #include "pluginlib/class_list_macros.hpp"
 

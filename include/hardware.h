@@ -44,6 +44,9 @@ namespace zebra_zero
     private:
         void encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles);
         void angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders);
+        
+        void move_direct();
+        void move_path(int num_points);
 
         // private members
         // ...

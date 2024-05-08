@@ -19,6 +19,9 @@ class NmcBus {
         unsigned int init();
         const std::vector<Module *>& modules();
         const Module* module(int ix);
+
+        void initPath();
+        bool startPath();
 };
 
 #endif // __NMC_H__

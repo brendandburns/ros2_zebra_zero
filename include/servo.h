@@ -14,6 +14,7 @@ class Servo : public Module {
         void write(int pos, int velocity, int acceleration);
         bool zero();
 
+        void initPath();
         bool setPath(const std::vector<long> &path);
 };
 
