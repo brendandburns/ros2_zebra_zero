@@ -41,6 +41,10 @@ namespace zebra_zero
         return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) override;
         return_type write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override;
 
+    private:
+        void encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles);
+        void angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders);
+
         // private members
         // ...
     };

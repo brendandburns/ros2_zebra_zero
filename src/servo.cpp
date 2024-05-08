@@ -60,3 +60,25 @@ bool Servo::zero()
 {
     return ServoResetPos(this->_index);
 }
+
+bool Servo::setPath(const std::vector<long> &path) {
+    if (path.size() > 128) {
+        return false;
+    }
+    if (path.size() == 0) {
+        return true;
+    }
+    for (size_t i = 0; i < path.size(); i += 7) {
+        bool ok = ServoAddPathpoints(this->_index, 7, (long *)&path[i], P_30HZ);
+        if (!ok) {
+            return false;
+        }
+    }
+    if (path.size() % 7 != 0) {
+        int ix = (path.size() / 7) * 7;
+        if (! ServoAddPathpoints(this->_index, path.size() % 7, (long *)&path[ix], P_30HZ)) {
+            return false;
+        }
+    }
+    return true;
+}

@@ -1,6 +1,8 @@
 #ifndef __SERVO_H__
 #define __SERVO_H__
 
+#include <vector>
+
 #include "module.h"
 
 class Servo : public Module {
@@ -11,6 +13,8 @@ class Servo : public Module {
         int read();
         void write(int pos, int velocity, int acceleration);
         bool zero();
+
+        bool setPath(const std::vector<long> &path);
 };
 
 #endif // __SERVO_H__
