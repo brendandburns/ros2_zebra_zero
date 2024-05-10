@@ -23,6 +23,12 @@ namespace zebra_zero
         10000,
     };
 
+    RobotSystem::~RobotSystem() {
+        // on ctrl-c, on_deactivate isn't called, so do it here.
+	    // see: https://github.com/ros-controls/ros2_control/issues/472
+        this->on_deactivate(rclcpp_lifecycle::State());
+    }
+
     CallbackReturn RobotSystem::on_init(const hardware_interface::HardwareInfo &info)
     {
         if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
@@ -30,6 +36,8 @@ namespace zebra_zero
             return CallbackReturn::ERROR;
         }
         nmc = new NmcBus("/dev/ttyUSB0", 19200);
+        modules_ = 0;
+
         modules_ = nmc->init();
         if (modules_ == 0)
         {
@@ -67,21 +75,27 @@ namespace zebra_zero
         return CallbackReturn::SUCCESS;
     }
 
-    CallbackReturn RobotSystem::on_activate(const rclcpp_lifecycle::State& previous_state) override
+    CallbackReturn RobotSystem::on_activate(const rclcpp_lifecycle::State& previous_state)
     {
-        if (hardware_interface::SystemInterface::on_activate(info) != CallbackReturn::SUCCESS)
+        if (hardware_interface::SystemInterface::on_activate(previous_state) != CallbackReturn::SUCCESS)
         {
             return CallbackReturn::ERROR;
         }
+
         return CallbackReturn::SUCCESS;
     }
 
-    CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
+    CallbackReturn RobotSystem::on_deactivate(const rclcpp_lifecycle::State& previous_state)
     {
-        if (hardware_interface::SystemInterface::on_deactivate(info) != CallbackReturn::SUCCESS)
+        if (hardware_interface::SystemInterface::on_deactivate(previous_state) != CallbackReturn::SUCCESS)
         {
             return CallbackReturn::ERROR;
         }
+        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Deactivating!");
+
+        delete(nmc);
+        nmc = NULL;
+        modules_ = 0;
         return CallbackReturn::SUCCESS;
     }
 
@@ -140,7 +154,7 @@ namespace zebra_zero
     return_type RobotSystem::write(__attribute__ ((unused)) const rclcpp::Time &time, __attribute__ ((unused)) const rclcpp::Duration &period)
     {
         move_direct();
-        // move_path();
+        // move_path(126);
 
         return return_type::OK;
     }
@@ -199,6 +213,10 @@ namespace zebra_zero
 
     void RobotSystem::move_path(int point_count)
     {
+        if (nmc->moving()) {
+            RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Already moving.");
+            return;
+        }
         std::vector<int> encoder;
         encoder.assign(6, 0);
 
@@ -208,27 +226,40 @@ namespace zebra_zero
         std::vector<long> paths[6];
 
         nmc->initPath();
-        for (int joint = 0; joint < 6; joint++) {
+        for (int joint = 0; joint < modules_; joint++) {
             paths[joint].assign(point_count, 0);
         }
 
-        for (int p = 1; p <= point_count; p++) {
-            for (int joint = 0; joint < 6; joint++) {
+        for (int p = 0; p < point_count; p++) {
+            for (int joint = 0; joint < modules_; joint++) {
                 double delta = (joint_position_command_[joint] - joint_position_[joint]);
-                point[joint] = joint_position_[joint] + (delta * p) / point_count;
+                point[joint] = joint_position_[joint] + (delta * (p + 1)) / point_count;
             }
             this->angles_to_encoders(point, encoder);
-            for (int joint = 0; joint < 6; joint++) {
+            for (int joint = 0; joint < modules_; joint++) {
                 paths[joint][p] = encoder[joint];
             }
         }
 
-        for (int joint = 0; joint < 6; joint++) {
+        for (int joint = 0; joint < modules_; joint++) {
             ((Servo *)nmc->module(joint))->setPath(paths[joint]);
         }
         nmc->startPath();
     }
 
+    hardware_interface::return_type RobotSystem::prepare_command_mode_switch(
+        const std::vector<std::string>& start_interfaces, const std::vector<std::string>& stop_interfaces)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Prepare command mode switch: %s %d", start_interfaces[0].c_str(), stop_interfaces.size());
+        return hardware_interface::return_type::OK;
+    }
+
+    hardware_interface::return_type RobotSystem::perform_command_mode_switch(
+        const std::vector<std::string>& start_interfaces, const std::vector<std::string>& stop_interfaces)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Perform command mode switch: %s %d", start_interfaces[0].c_str(), stop_interfaces.size());
+        return hardware_interface::return_type::OK;
+    }
 }
 
 #include "pluginlib/class_list_macros.hpp"

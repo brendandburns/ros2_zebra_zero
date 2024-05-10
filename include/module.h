@@ -17,6 +17,9 @@ class Module {
 
         int index() { return this->_index; }
         ModuleType type() { return this->_type; }
+
+        virtual void deactivate() = 0;
+        virtual bool moving() = 0;
 };
 
 #endif

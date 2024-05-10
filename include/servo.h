@@ -16,6 +16,12 @@ class Servo : public Module {
 
         void initPath();
         bool setPath(const std::vector<long> &path);
+
+        void deactivate() override;
+        bool moving() override;
+    
+    private:
+        bool _active;
 };
 
 #endif // __SERVO_H__

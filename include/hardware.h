@@ -22,7 +22,8 @@ namespace zebra_zero
         std::vector<double> joint_position_command_;
         std::vector<double> joint_velocity_;
         std::vector<double> joint_velocity_command_;
-        std::string hw_command_mode_;
+        bool position_active_;
+        bool velocity_active_;
 
         std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
             {"position", {}}, {"velocity", {}}};
@@ -31,6 +32,8 @@ namespace zebra_zero
         int     modules_;
 
     public:
+        ~RobotSystem();
+
         CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
         CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
         CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
@@ -41,6 +44,11 @@ namespace zebra_zero
         std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
         return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) override;
         return_type write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override;
+
+         hardware_interface::return_type prepare_command_mode_switch(
+            const std::vector<std::string>& start_interfaces, const std::vector<std::string>& stop_interfaces) override;
+        hardware_interface::return_type perform_command_mode_switch(
+            const std::vector<std::string>& start_interfaces, const std::vector<std::string>& stop_interfaces) override;
 
     private:
         void encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles);

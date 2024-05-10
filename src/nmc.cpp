@@ -11,6 +11,10 @@ NmcBus::NmcBus(const char* port, unsigned int baudrate) : _port(strdup(port)), _
 
 NmcBus::~NmcBus() {
     free(this->_port);
+    for (Module *m: this->_modules) {
+        m->deactivate();
+        delete(m);
+    }
     NmcShutdown();
 }
 
@@ -48,4 +52,13 @@ void NmcBus::initPath()
 bool NmcBus::startPath()
 {
     return ServoStartPathMode(0xFF, 1);
+}
+
+bool NmcBus::moving() {
+    for (Module *m : this->_modules) {
+        if (m->moving()) {
+            return true;
+        }
+    }
+    return false;
 }

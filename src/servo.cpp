@@ -5,10 +5,11 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-Servo::Servo(int ix) : Module(ix, ModuleType::SERVO)
+Servo::Servo(int ix) : Module(ix, ModuleType::SERVO), _active(false)
 {
     // Retrieve the position data from the local data structure
-    NmcDefineStatus(this->_index, SEND_POS);
+    NmcDefineStatus(this->_index, SEND_POS); // | SEND_NPOINTS | SEND_PERROR | SEND_AUX);
+
 
     ServoSetGain(this->_index, // axis = 1
                  100,          // Kp = 100
@@ -23,21 +24,36 @@ Servo::Servo(int ix) : Module(ix, ModuleType::SERVO)
     );
 
     ServoStopMotor(this->_index, AMP_ENABLE | MOTOR_OFF);   // enable amp
-    ServoStopMotor(this->_index, AMP_ENABLE | STOP_ABRUPT); // stop at current pos.
+    ServoStopMotor(this->_index, AMP_ENABLE | STOP_ABRUPT | ADV_FEATURE); // stop at current pos.
     ServoResetPos(this->_index);
+    _active = true;
 }
 
 Servo::~Servo() {
+    if (_active) {
+        deactivate();
+    }
+}
+
+void Servo::deactivate() {
+    ServoStopMotor(this->_index, MOTOR_OFF);
+    _active = false;
 }
 
 int Servo::read()
 {
+    if (!_active) {
+        return 0;
+    }
     NmcNoOp(this->_index);
     return ServoGetPos(this->_index);
 }
 
 void Servo::write(int pos, int velocity, int acceleration)
 {
+    if (!_active) {
+        return;
+    }
     byte statbyte = 0;
     NmcNoOp(1);	//poll controller to get current status data
     statbyte = NmcGetStat(1);
@@ -58,15 +74,24 @@ void Servo::write(int pos, int velocity, int acceleration)
 
 bool Servo::zero()
 {
+    if (!_active) {
+        return false;
+    }
     return ServoResetPos(this->_index);
 }
 
 void Servo::initPath()
 {
+    if (!_active) {
+        return;
+    }
     ServoInitPath(this->_index);
 }
 
 bool Servo::setPath(const std::vector<long> &path) {
+    if (!_active) {
+        return false;
+    }
     if (path.size() > 128) {
         return false;
     }
@@ -86,4 +111,10 @@ bool Servo::setPath(const std::vector<long> &path) {
         }
     }
     return true;
+}
+
+bool Servo::moving() {
+    NmcNoOp(this->_index);
+    byte statbyte = NmcGetStat(this->_index);
+    return !(statbyte & MOVE_DONE);
 }

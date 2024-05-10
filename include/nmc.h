@@ -17,11 +17,14 @@ class NmcBus {
         ~NmcBus();
 
         unsigned int init();
+        void deactivate();
+
         const std::vector<Module *>& modules();
         const Module* module(int ix);
 
         void initPath();
-        bool startPath();
+        bool startPath(); 
+        bool moving();
 };
 
 #endif // __NMC_H__
