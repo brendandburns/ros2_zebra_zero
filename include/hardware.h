@@ -22,8 +22,11 @@ namespace zebra_zero
         std::vector<double> joint_position_command_;
         std::vector<double> joint_velocity_;
         std::vector<double> joint_velocity_command_;
+
         bool position_active_;
         bool velocity_active_;
+        std::string stop_mode_;
+        std::string start_mode_;
 
         std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
             {"position", {}}, {"velocity", {}}};
@@ -52,10 +55,11 @@ namespace zebra_zero
 
     private:
         void encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles);
-        void angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders);
+        void angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders, const std::vector<double> home);
         
         void move_direct();
         void move_path(int num_points);
+        void set_velocity();
 
         // private members
         // ...

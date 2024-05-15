@@ -1,5 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 
+#include <fmt/format.h>
+
 #include "hardware.h"
 #include "servo.h"
 
@@ -23,9 +25,10 @@ namespace zebra_zero
         10000,
     };
 
-    RobotSystem::~RobotSystem() {
+    RobotSystem::~RobotSystem()
+    {
         // on ctrl-c, on_deactivate isn't called, so do it here.
-	    // see: https://github.com/ros-controls/ros2_control/issues/472
+        // see: https://github.com/ros-controls/ros2_control/issues/472
         this->on_deactivate(rclcpp_lifecycle::State());
     }
 
@@ -37,6 +40,8 @@ namespace zebra_zero
         }
         nmc = new NmcBus("/dev/ttyUSB0", 19200);
         modules_ = 0;
+        position_active_ = false;
+        velocity_active_ = false;
 
         modules_ = nmc->init();
         if (modules_ == 0)
@@ -75,7 +80,7 @@ namespace zebra_zero
         return CallbackReturn::SUCCESS;
     }
 
-    CallbackReturn RobotSystem::on_activate(const rclcpp_lifecycle::State& previous_state)
+    CallbackReturn RobotSystem::on_activate(const rclcpp_lifecycle::State &previous_state)
     {
         if (hardware_interface::SystemInterface::on_activate(previous_state) != CallbackReturn::SUCCESS)
         {
@@ -85,7 +90,7 @@ namespace zebra_zero
         return CallbackReturn::SUCCESS;
     }
 
-    CallbackReturn RobotSystem::on_deactivate(const rclcpp_lifecycle::State& previous_state)
+    CallbackReturn RobotSystem::on_deactivate(const rclcpp_lifecycle::State &previous_state)
     {
         if (hardware_interface::SystemInterface::on_deactivate(previous_state) != CallbackReturn::SUCCESS)
         {
@@ -93,7 +98,7 @@ namespace zebra_zero
         }
         RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Deactivating!");
 
-        delete(nmc);
+        delete (nmc);
         nmc = NULL;
         modules_ = 0;
         return CallbackReturn::SUCCESS;
@@ -133,7 +138,7 @@ namespace zebra_zero
         return command_interfaces;
     }
 
-    return_type RobotSystem::read(__attribute__ ((unused)) const rclcpp::Time &time, __attribute__ ((unused)) const rclcpp::Duration &period)
+    return_type RobotSystem::read(__attribute__((unused)) const rclcpp::Time &time, __attribute__((unused)) const rclcpp::Duration &period)
     {
         // TODO: move this into the constructor
         std::vector<int> encoders;
@@ -151,7 +156,7 @@ namespace zebra_zero
         return return_type::OK;
     }
 
-    return_type RobotSystem::write(__attribute__ ((unused)) const rclcpp::Time &time, __attribute__ ((unused)) const rclcpp::Duration &period)
+    return_type RobotSystem::write(__attribute__((unused)) const rclcpp::Time &time, __attribute__((unused)) const rclcpp::Duration &period)
     {
         move_direct();
         // move_path(126);
@@ -159,7 +164,7 @@ namespace zebra_zero
         return return_type::OK;
     }
 
-    hardware_interface::CallbackReturn RobotSystem::on_shutdown(__attribute__ ((unused)) const rclcpp_lifecycle::State &previous_state)
+    hardware_interface::CallbackReturn RobotSystem::on_shutdown(__attribute__((unused)) const rclcpp_lifecycle::State &previous_state)
     {
         RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Shutting down Zebra Zero");
 
@@ -183,19 +188,35 @@ namespace zebra_zero
         angles[5] = ec5 / 11034.53 - ec4 / 22069.06 + ec3 / 11034.53 - encoders[2] / 40743.68 + this->home_position_[5];
     }
 
-    void RobotSystem::angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders)
+    void RobotSystem::angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders, std::vector<double> home)
     {
         for (int i = 0; i < 3; i++)
         {
-            encoders[i] = (angles[i] - home_position_[i]) * 30557.75;
+            encoders[i] = (angles[i] - home[i]) * 30557.75;
         }
 
-        double temp3 = 16551.79 * (angles[2] - home_position_[2]);
-        double temp4 = 11034.53 * (angles[3] - home_position_[3]);
+        double temp3 = 16551.79 * (angles[2] - home[2]);
+        double temp4 = 11034.53 * (angles[3] - home[3]);
 
         encoders[3] = temp3 + temp4;
-        encoders[4] = -temp3 + temp4 + 22069.06 * (angles[4] - home_position_[4]) - 11034.53 * (angles[5] - home_position_[5]);
-        encoders[5] = -temp3 + 11034.53 * (angles[4] - home_position_[4]) + 5517.265 * (home_position_[3] - angles[3] + angles[5] - home_position_[5]);
+        encoders[4] = -temp3 + temp4 + 22069.06 * (angles[4] - home[4]) - 11034.53 * (angles[5] - home[5]);
+        encoders[5] = -temp3 + 11034.53 * (angles[4] - home[4]) + 5517.265 * (home[3] - angles[3] + angles[5] - home[5]);
+    }
+
+    void RobotSystem::set_velocity()
+    {
+        std::vector<int> encoder;
+        encoder.assign(6, 0);
+
+        std::vector<double> zeros;
+        zeros.assign(6, 0);
+
+        this->angles_to_encoders(this->joint_velocity_command_, encoder, zeros);
+
+        for (int i = 0; i < modules_; i++) {
+            ((Servo*) nmc->module(i))->velocity(encoder[i], encoder[i]);
+        }
+        
     }
 
     void RobotSystem::move_direct()
@@ -203,7 +224,7 @@ namespace zebra_zero
         std::vector<int> encoder;
         encoder.assign(6, 0);
 
-        this->angles_to_encoders(this->joint_position_command_, encoder);
+        this->angles_to_encoders(this->joint_position_command_, encoder, home_position_);
 
         for (int i = 0; i < modules_; i++)
         {
@@ -213,7 +234,8 @@ namespace zebra_zero
 
     void RobotSystem::move_path(int point_count)
     {
-        if (nmc->moving()) {
+        if (nmc->moving())
+        {
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Already moving.");
             return;
         }
@@ -226,38 +248,125 @@ namespace zebra_zero
         std::vector<long> paths[6];
 
         nmc->initPath();
-        for (int joint = 0; joint < modules_; joint++) {
+        for (int joint = 0; joint < modules_; joint++)
+        {
             paths[joint].assign(point_count, 0);
         }
 
-        for (int p = 0; p < point_count; p++) {
-            for (int joint = 0; joint < modules_; joint++) {
+        for (int p = 0; p < point_count; p++)
+        {
+            for (int joint = 0; joint < modules_; joint++)
+            {
                 double delta = (joint_position_command_[joint] - joint_position_[joint]);
                 point[joint] = joint_position_[joint] + (delta * (p + 1)) / point_count;
             }
-            this->angles_to_encoders(point, encoder);
-            for (int joint = 0; joint < modules_; joint++) {
+            this->angles_to_encoders(point, encoder, home_position_);
+            for (int joint = 0; joint < modules_; joint++)
+            {
                 paths[joint][p] = encoder[joint];
             }
         }
 
-        for (int joint = 0; joint < modules_; joint++) {
+        for (int joint = 0; joint < modules_; joint++)
+        {
             ((Servo *)nmc->module(joint))->setPath(paths[joint]);
         }
         nmc->startPath();
     }
 
     hardware_interface::return_type RobotSystem::prepare_command_mode_switch(
-        const std::vector<std::string>& start_interfaces, const std::vector<std::string>& stop_interfaces)
+        const std::vector<std::string> &start_interfaces, const std::vector<std::string> &stop_interfaces)
     {
-        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Prepare command mode switch: %s %d", start_interfaces[0].c_str(), stop_interfaces.size());
+        // Taken from https://github.com/frankaemika/franka_ros2/blob/humble/franka_hardware/src/franka_hardware_interface.cpp
+        auto contains_interface_type = [](const std::string &interface,
+                                          const std::string &interface_type)
+        {
+            size_t slash_position = interface.find('/');
+            if (slash_position != std::string::npos && slash_position + 1 < interface.size())
+            {
+                std::string after_slash = interface.substr(slash_position + 1);
+                return after_slash == interface_type;
+            }
+            return false;
+        };
+
+        auto generate_error_message = [this](const std::string &start_stop_command,
+                                             const std::string &interface_name,
+                                             size_t actual_interface_size,
+                                             size_t expected_interface_size)
+        {
+            std::string error_message =
+                fmt::format("Invalid number of {} interfaces to {}. Expected {}, given {}", interface_name,
+                            start_stop_command, expected_interface_size, actual_interface_size);
+            RCLCPP_FATAL(rclcpp::get_logger("ZebraZeroHardware"), "%s", error_message.c_str());
+
+            throw std::invalid_argument(error_message);
+        };
+
+        for (const auto &interface_type : {"position", "velocity"})
+        {
+            size_t num_stop_interface =
+                std::count_if(stop_interfaces.begin(), stop_interfaces.end(),
+                              [contains_interface_type, &interface_type](const std::string &interface_given)
+                              {
+                                  return contains_interface_type(interface_given, interface_type);
+                              });
+            size_t num_start_interface =
+                std::count_if(start_interfaces.begin(), start_interfaces.end(),
+                              [contains_interface_type, &interface_type](const std::string &interface_given)
+                              {
+                                  return contains_interface_type(interface_given, interface_type);
+                              });
+
+            if (num_stop_interface == 6)
+            {
+                stop_mode_ = interface_type;
+            }
+            else if (num_stop_interface != 0U)
+            {
+                generate_error_message("stop", interface_type, num_stop_interface, 6);
+            }
+            if (num_start_interface == 6)
+            {
+                start_mode_ = interface_type;
+            }
+            else if (num_start_interface != 0U)
+            {
+                generate_error_message("start", interface_type, num_start_interface, 6);
+            }
+        }
+
         return hardware_interface::return_type::OK;
     }
 
     hardware_interface::return_type RobotSystem::perform_command_mode_switch(
-        const std::vector<std::string>& start_interfaces, const std::vector<std::string>& stop_interfaces)
+        __attribute__((unused)) const std::vector<std::string> &start_interfaces,
+        __attribute__((unused)) const std::vector<std::string> &stop_interfaces)
     {
-        RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Perform command mode switch: %s %d", start_interfaces[0].c_str(), stop_interfaces.size());
+        if (start_mode_ == "position") {
+            position_active_ = true;
+            velocity_active_ = false;
+            RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Position mode activated.");
+        } else if (start_mode_ == "velocity") {
+            position_active_ = false;
+            velocity_active_ = true;
+            RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Velocity mode activated.");
+        }
+        if (stop_mode_ == "position") {
+            position_active_ = false;
+            // TODO: actually stop robot here.
+            RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Position mode deactivated.");
+        } else if (stop_mode_ == "velocity")
+        {
+            velocity_active_ = false;
+            // TODO: actually stop robot here.
+            RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Velocity mode deactivated.");
+        }
+        
+        // clear out mode switches
+        start_mode_ = "";
+        stop_mode_ = "";
+
         return hardware_interface::return_type::OK;
     }
 }

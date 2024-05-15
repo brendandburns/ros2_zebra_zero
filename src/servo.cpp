@@ -8,7 +8,7 @@
 Servo::Servo(int ix) : Module(ix, ModuleType::SERVO), _active(false)
 {
     // Retrieve the position data from the local data structure
-    NmcDefineStatus(this->_index, SEND_POS); // | SEND_NPOINTS | SEND_PERROR | SEND_AUX);
+    NmcDefineStatus(this->_index, SEND_POS /* | SEND_VEL */); // | SEND_NPOINTS | SEND_PERROR | SEND_AUX);
 
 
     ServoSetGain(this->_index, // axis = 1
@@ -66,6 +66,34 @@ void Servo::write(int pos, int velocity, int acceleration)
     ServoLoadTraj(this->_index, // addr = _index
                   LOAD_POS | LOAD_VEL | LOAD_ACC | ENABLE_SERVO | START_NOW,
                   pos,
+                  velocity,
+                  acceleration,
+                  0
+    );
+}
+
+bool Servo::stop()
+{
+    return ServoStopMotor(this->_index, AMP_ENABLE | STOP_ABRUPT | ADV_FEATURE); // stop at current pos.
+}
+
+void Servo::velocity(int velocity, int acceleration)
+{
+    if (!_active) {
+        return;
+    }
+    byte statbyte = 0;
+    NmcNoOp(1);	//poll controller to get current status data
+    statbyte = NmcGetStat(1);
+    if (!(statbyte & MOVE_DONE)) {
+        if (!this->stop()) {
+            RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to stop motor (%d)", this->_index);
+            return;
+        }
+    }
+    ServoLoadTraj(this->_index, // addr = _index
+                  LOAD_VEL | LOAD_ACC | ENABLE_SERVO | START_NOW,
+                  0,
                   velocity,
                   acceleration,
                   0
