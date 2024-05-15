@@ -13,7 +13,7 @@ find_package(ament_cmake REQUIRED)
 
 include_directories(
   include
-  /home/bburns/src/libnmc
+  /tmp/libnmc
   /opt/ros/humble/include
 )
 
@@ -40,7 +40,7 @@ endforeach()
 #            libnmc/sio_util.cpp
 #            )
 add_library(nmc STATIC IMPORTED)
-set_target_properties(nmc PROPERTIES IMPORTED_LOCATION /home/bburns/src/libnmc/libnmc.a)
+set_target_properties(nmc PROPERTIES IMPORTED_LOCATION /usr/local/lib/libnmc.so)
 
 add_library(
     zebra_zero
