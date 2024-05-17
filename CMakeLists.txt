@@ -47,6 +47,7 @@ add_library(
     SHARED
     src/nmc.cpp
     src/servo.cpp
+    src/hal.cpp
     src/hardware.cpp
     src/controller.cpp
 )

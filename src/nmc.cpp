@@ -1,11 +1,13 @@
 #include "nmc.h"
 #include "servo.h"
 #include "stepper.h"
-#include "nmccom.h"
-#include "picservo.h"
+#include "hal.h"
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+
+using zebra_zero::HardwareAbstractionLayer;
 
 NmcBus::NmcBus(const char* port, unsigned int baudrate) : _port(strdup(port)), _baudrate(baudrate) {}
 
@@ -15,18 +17,18 @@ NmcBus::~NmcBus() {
         m->deactivate();
         delete(m);
     }
-    NmcShutdown();
+    HardwareAbstractionLayer::instance()->Shutdown();
 }
 
 unsigned int NmcBus::init() {
-    auto count = NmcInit(this->_port, this->_baudrate);
-    for (int i = 0; i < count; i++) {
-        auto mod = NmcGetModType((byte) i + 1);
+    auto count = HardwareAbstractionLayer::instance()->Init(this->_port, this->_baudrate);
+    for (auto i = 0; i < count; i++) {
+        auto mod = HardwareAbstractionLayer::instance()->GetModType((uint8_t) i + 1);
         switch(mod) {
             case SERVOMODTYPE:
                 this->_modules.push_back(new Servo(i+1));
                 break;
-            case STEPMODTYPE:
+            case STEPPERMODTYPE:
                 this->_modules.push_back(new Stepper(i+1));
                 break;
             default:
@@ -51,7 +53,7 @@ void NmcBus::initPath()
 
 bool NmcBus::startPath()
 {
-    return ServoStartPathMode(0xFF, 1);
+    return HardwareAbstractionLayer::instance()->StartPathMode(0xFF, 1);
 }
 
 bool NmcBus::moving() {
