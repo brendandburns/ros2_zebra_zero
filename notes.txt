@@ -1,0 +1,24 @@
+Very useful doc:
+https://github.com/ros-controls/ros2_control_demos/blob/d1beb6e1a038e668c9f40ef8c702863f3cabfba7/example_13/doc/userdoc.rst
+
+
+Turn on velocity:
+ros2 topic pub /velocity_controller/commands std_msgs/msg/Float64MultiArray "data:
+- 0
+- 0  
+- 0
+- 0
+- 0
+- 0
+" -1
+
+Turn on position:
+ros2 topic pub /velocity_controller/commands std_msgs/msg/Float64MultiArray "data:
+- 0
+- 0.1
+- 0
+- 0
+- 0
+- 0
+" -1
+

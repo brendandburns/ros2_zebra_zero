@@ -28,7 +28,7 @@ unsigned int NmcBus::init() {
             case SERVOMODTYPE:
                 this->_modules.push_back(new Servo(i+1));
                 break;
-            case STEPPERMODTYPE:
+            case STEPMODTYPE:
                 this->_modules.push_back(new Stepper(i+1));
                 break;
             default:

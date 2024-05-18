@@ -13,7 +13,7 @@ find_package(ament_cmake REQUIRED)
 
 include_directories(
   include
-  /tmp/libnmc
+  /home/bburns/src/libnmc
   /opt/ros/humble/include
 )
 

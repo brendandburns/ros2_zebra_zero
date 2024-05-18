@@ -9,9 +9,7 @@ std::shared_ptr<HardwareAbstractionLayer> HardwareAbstractionLayer::instance() {
 }
 
 
-#ifdef LIBNMC
-#include "nmccom.h"
-#include "picservo.h"
+#ifndef MOCK_HARDWARE
 
 void HardwareAbstractionLayer::Shutdown()
 {
@@ -60,6 +58,11 @@ bool HardwareAbstractionLayer::StopMotor(uint8_t addr, int flags) {
 
 long HardwareAbstractionLayer::GetPos(uint8_t addr) {
     return ServoGetPos(addr);
+}
+
+void HardwareAbstractionLayer::GetPosAndVel(uint8_t addr, int* pos, int* vel) {
+    *pos = ServoGetPos(addr);
+    *vel = ServoGetVel(addr);
 }
 
 bool HardwareAbstractionLayer::SetGain(uint8_t addr, long Kp, long Kd, long Ki, long IL, long OL, long CL, long EL, long SR, long DC) {
@@ -124,7 +127,10 @@ bool HardwareAbstractionLayer::StopMotor(uint8_t, int) {
 }
 
 long HardwareAbstractionLayer::GetPos(uint8_t) {
-    return false;
+    return 0;
+}
+
+void HardwareAbstractionLayer::GetPosAndVel(uint8_t, int*, int*) {
 }
 
 bool HardwareAbstractionLayer::SetGain(uint8_t, long, long, long, long, long, long, long, long, long) {

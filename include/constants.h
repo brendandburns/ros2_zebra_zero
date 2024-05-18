@@ -1,12 +1,12 @@
 #ifndef __CONSTANTS_H__
 #define __CONSTANTS_H__
 
-#ifdef LIBNMC
+#ifndef MOCK_HARDWARE
 #include "nmccom.h"
 #include "picservo.h"
 #else
 #define SERVOMODTYPE 0
-#define STEPPERMODTYPE 1
+#define STEPMODTYPE 1
 
 #define START_NOW 1
 #define ENABLE_SERVO 2

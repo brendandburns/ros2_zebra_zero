@@ -142,24 +142,39 @@ namespace zebra_zero
     {
         // TODO: move this into the constructor
         std::vector<int> encoders;
+        std::vector<int> encoder_velocity;
+        std::vector<double> zeros;
         encoders.assign(6, 0);
+        encoder_velocity.assign(6, 0);
+        zeros.assign(6, 0);
 
         for (int i = 0; i < modules_; i++)
         {
+            int pos, vel;
             Servo *servo = (Servo *)nmc->module(i);
-            encoders[i] = servo->read();
+            servo->read(&pos, &vel);
+            encoders[i] = pos;
+            encoder_velocity[i] = vel;
         }
         RCLCPP_DEBUG(rclcpp::get_logger("ZebraZeroHardware"), "encoders: %d %d %d", encoders[3], encoders[4], encoders[5]);
 
-        this->encoders_to_angles(encoders, this->joint_position_);
+        RobotSystem::encoders_to_angles(encoders, this->joint_position_, this->home_position_);
+        RobotSystem::encoders_to_angles(encoder_velocity, this->joint_velocity_, zeros);
 
         return return_type::OK;
     }
 
     return_type RobotSystem::write(__attribute__((unused)) const rclcpp::Time &time, __attribute__((unused)) const rclcpp::Duration &period)
     {
-        move_direct();
-        // move_path(126);
+        if (this->position_active_)
+        {
+            move_direct();
+            // move_path(126);
+        }
+        if (this->velocity_active_)
+        {
+            move_velocity();
+        }
 
         return return_type::OK;
     }
@@ -173,22 +188,22 @@ namespace zebra_zero
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
-    void RobotSystem::encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles)
+    void RobotSystem::encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles, const std::vector<double> &home)
     {
         for (int i = 0; i < 3; i++)
         {
-            angles[i] = (encoders[i] / 30557.75) + this->home_position_[i];
+            angles[i] = (encoders[i] / 30557.75) + home[i];
         }
         double ec3 = encoders[3]; // * 17.33 / 24.0;
         double ec4 = encoders[4]; // * 17.33 / 24.0;
         double ec5 = encoders[5]; // * 17.33 / 24.0;
 
-        angles[3] = ec3 / 11034.53 - encoders[2] / 20371.83 + this->home_position_[3];
-        angles[4] = ec5 / 22069.06 + ec4 / 44138.12 + encoders[2] / 27162.44 + this->home_position_[4];
-        angles[5] = ec5 / 11034.53 - ec4 / 22069.06 + ec3 / 11034.53 - encoders[2] / 40743.68 + this->home_position_[5];
+        angles[3] = ec3 / 11034.53 - encoders[2] / 20371.83 + home[3];
+        angles[4] = ec5 / 22069.06 + ec4 / 44138.12 + encoders[2] / 27162.44 + home[4];
+        angles[5] = ec5 / 11034.53 - ec4 / 22069.06 + ec3 / 11034.53 - encoders[2] / 40743.68 + home[5];
     }
 
-    void RobotSystem::angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders, std::vector<double> home)
+    void RobotSystem::angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders, const std::vector<double> &home)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -203,7 +218,7 @@ namespace zebra_zero
         encoders[5] = -temp3 + 11034.53 * (angles[4] - home[4]) + 5517.265 * (home[3] - angles[3] + angles[5] - home[5]);
     }
 
-    void RobotSystem::set_velocity()
+    void RobotSystem::move_velocity()
     {
         std::vector<int> encoder;
         encoder.assign(6, 0);
@@ -211,12 +226,14 @@ namespace zebra_zero
         std::vector<double> zeros;
         zeros.assign(6, 0);
 
-        this->angles_to_encoders(this->joint_velocity_command_, encoder, zeros);
+        RobotSystem::angles_to_encoders(this->joint_velocity_command_, encoder, zeros);
+        RCLCPP_DEBUG(rclcpp::get_logger("ZebraZeroHardware"),
+                     "Setting velocity to %d %d %d %d %d %d", encoder[0], encoder[1], encoder[2], encoder[3], encoder[4], encoder[5]);
 
-        for (int i = 0; i < modules_; i++) {
-            ((Servo*) nmc->module(i))->velocity(encoder[i], encoder[i]);
+        for (int i = 0; i < modules_; i++)
+        {
+            ((Servo *)nmc->module(i))->velocity(encoder[i], encoder[i]);
         }
-        
     }
 
     void RobotSystem::move_direct()
@@ -224,7 +241,7 @@ namespace zebra_zero
         std::vector<int> encoder;
         encoder.assign(6, 0);
 
-        this->angles_to_encoders(this->joint_position_command_, encoder, home_position_);
+        RobotSystem::angles_to_encoders(this->joint_position_command_, encoder, home_position_);
 
         for (int i = 0; i < modules_; i++)
         {
@@ -260,7 +277,7 @@ namespace zebra_zero
                 double delta = (joint_position_command_[joint] - joint_position_[joint]);
                 point[joint] = joint_position_[joint] + (delta * (p + 1)) / point_count;
             }
-            this->angles_to_encoders(point, encoder, home_position_);
+            RobotSystem::angles_to_encoders(point, encoder, home_position_);
             for (int joint = 0; joint < modules_; joint++)
             {
                 paths[joint][p] = encoder[joint];
@@ -343,26 +360,31 @@ namespace zebra_zero
         __attribute__((unused)) const std::vector<std::string> &start_interfaces,
         __attribute__((unused)) const std::vector<std::string> &stop_interfaces)
     {
-        if (start_mode_ == "position") {
+        if (start_mode_ == "position")
+        {
             position_active_ = true;
             velocity_active_ = false;
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Position mode activated.");
-        } else if (start_mode_ == "velocity") {
+        }
+        else if (start_mode_ == "velocity")
+        {
             position_active_ = false;
             velocity_active_ = true;
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Velocity mode activated.");
         }
-        if (stop_mode_ == "position") {
+        if (stop_mode_ == "position")
+        {
             position_active_ = false;
             // TODO: actually stop robot here.
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Position mode deactivated.");
-        } else if (stop_mode_ == "velocity")
+        }
+        else if (stop_mode_ == "velocity")
         {
             velocity_active_ = false;
             // TODO: actually stop robot here.
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Velocity mode deactivated.");
         }
-        
+
         // clear out mode switches
         start_mode_ = "";
         stop_mode_ = "";

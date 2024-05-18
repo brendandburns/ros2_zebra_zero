@@ -10,7 +10,7 @@ class Servo : public Module {
         Servo(int index);
         ~Servo();
 
-        int read();
+        void read(int *pos, int* velocity);
         void write(int pos, int velocity, int acceleration);
         void velocity(int velocity, int acceleration);
         bool stop();

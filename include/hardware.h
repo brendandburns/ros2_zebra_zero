@@ -54,12 +54,12 @@ namespace zebra_zero
             const std::vector<std::string>& start_interfaces, const std::vector<std::string>& stop_interfaces) override;
 
     private:
-        void encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles);
-        void angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders, const std::vector<double> home);
+        static void encoders_to_angles(const std::vector<int> &encoders, std::vector<double> &angles, const std::vector<double> &home);
+        static void angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders, const std::vector<double> &home);
         
         void move_direct();
         void move_path(int num_points);
-        void set_velocity();
+        void move_velocity();
 
         // private members
         // ...

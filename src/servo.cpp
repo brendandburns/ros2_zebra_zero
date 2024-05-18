@@ -8,7 +8,7 @@ using zebra_zero::HardwareAbstractionLayer;
 Servo::Servo(int ix) : Module(ix, ModuleType::SERVO), _active(false)
 {
     // Retrieve the position data from the local data structure
-    HardwareAbstractionLayer::instance()->DefineStatus(this->_index, SEND_POS /* | SEND_VEL */); // | SEND_NPOINTS | SEND_PERROR | SEND_AUX);
+    HardwareAbstractionLayer::instance()->DefineStatus(this->_index, SEND_POS | SEND_VEL); // | SEND_NPOINTS | SEND_PERROR | SEND_AUX);
 
 
     HardwareAbstractionLayer::instance()->SetGain(this->_index, // axis = 1
@@ -40,13 +40,13 @@ void Servo::deactivate() {
     _active = false;
 }
 
-int Servo::read()
+void Servo::read(int* pos, int* vel)
 {
     if (!_active) {
-        return 0;
+        return;
     }
     HardwareAbstractionLayer::instance()->NoOp(this->_index);
-    return HardwareAbstractionLayer::instance()->GetPos(this->_index);
+    HardwareAbstractionLayer::instance()->GetPosAndVel(this->_index, pos, vel);
 }
 
 void Servo::write(int pos, int velocity, int acceleration)
@@ -60,6 +60,11 @@ void Servo::write(int pos, int velocity, int acceleration)
         return;
     }
     // RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Setting position to %d for %d", pos, this->_index);
+    // See section 4.4.7 of the PIC-SERVO manual. The lower 16 bits are treated as fractional components
+    // we'll ignore them for now because we definitely don't need to move that slow.
+    // velocity = velocity << 16;
+    // acceleration = acceleration << 16;
+
     HardwareAbstractionLayer::instance()->LoadTraj(this->_index, // addr = _index
                   LOAD_POS | LOAD_VEL | LOAD_ACC | ENABLE_SERVO | START_NOW,
                   pos,
@@ -85,14 +90,21 @@ void Servo::velocity(int velocity, int acceleration)
             return;
         }
     }
-    HardwareAbstractionLayer::instance()->LoadTraj(this->_index, // addr = _index
-                  LOAD_VEL | LOAD_ACC | ENABLE_SERVO | START_NOW,
-                  0,
-                  velocity,
-                  acceleration,
-                  0
-    );
-}
+    int mode = LOAD_VEL | LOAD_ACC | ENABLE_SERVO | VEL_MODE | START_NOW;
+    if (velocity < 0) {
+        velocity = -velocity;
+        mode |= REVERSE;
+    }
+    // See section 4.4.7 of the PIC-SERVO manual. The lower 16 bits are treated as fractional components
+    // we'll ignore them for now because we definitely don't need to move that slow.
+    // The formula is 2^16/2000 because the pic servo goes at 2khz, 2^16/2000 ~=32 (close enough...)
+    velocity = velocity << 5;
+    acceleration = acceleration << 5;
+    if (!HardwareAbstractionLayer::instance()->LoadTraj(this->_index, mode, 0, velocity, acceleration, 0))
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to set velocity (%d)", this->_index);
+    }
+}        
 
 bool Servo::zero()
 {
