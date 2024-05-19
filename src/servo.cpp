@@ -36,6 +36,7 @@ Servo::~Servo() {
 }
 
 void Servo::deactivate() {
+    this->stop(false);
     HardwareAbstractionLayer::instance()->StopMotor(this->_index, MOTOR_OFF);
     _active = false;
 }
@@ -60,10 +61,12 @@ void Servo::write(int pos, int velocity, int acceleration)
         return;
     }
     // RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Setting position to %d for %d", pos, this->_index);
+    
     // See section 4.4.7 of the PIC-SERVO manual. The lower 16 bits are treated as fractional components
     // we'll ignore them for now because we definitely don't need to move that slow.
-    // velocity = velocity << 16;
-    // acceleration = acceleration << 16;
+    // The formula is 2^16/2000 because the pic servo goes at 2khz, 2^16/2000 ~=32 (close enough...)
+    // velocity = velocity << 5;
+    // acceleration = acceleration << 5;
 
     HardwareAbstractionLayer::instance()->LoadTraj(this->_index, // addr = _index
                   LOAD_POS | LOAD_VEL | LOAD_ACC | ENABLE_SERVO | START_NOW,
@@ -74,9 +77,10 @@ void Servo::write(int pos, int velocity, int acceleration)
     );
 }
 
-bool Servo::stop()
+bool Servo::stop(bool smooth)
 {
-    return HardwareAbstractionLayer::instance()->StopMotor(this->_index, AMP_ENABLE | STOP_ABRUPT | ADV_FEATURE); // stop at current pos.
+    int mode = AMP_ENABLE | ADV_FEATURE | (smooth ? STOP_SMOOTH : STOP_ABRUPT);
+    return HardwareAbstractionLayer::instance()->StopMotor(this->_index, mode); // stop at current pos.
 }
 
 void Servo::velocity(int velocity, int acceleration)
@@ -85,7 +89,7 @@ void Servo::velocity(int velocity, int acceleration)
         return;
     }
     if (this->moving()) {
-        if (!this->stop()) {
+        if (!this->stop(false)) {
             RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to stop motor (%d)", this->_index);
             return;
         }

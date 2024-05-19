@@ -13,6 +13,7 @@ std::shared_ptr<HardwareAbstractionLayer> HardwareAbstractionLayer::instance() {
 
 void HardwareAbstractionLayer::Shutdown()
 {
+    NmcHardReset(0xFF);
     NmcShutdown();
 }
 
@@ -21,6 +22,7 @@ uint8_t HardwareAbstractionLayer::Init(char *path, int baudrate) {
 }
 
 uint8_t HardwareAbstractionLayer::GetModType(uint8_t addr) {
+    NmcReadStatus(addr, SEND_ID);
     return NmcGetModType(addr);
 }
 
@@ -62,7 +64,8 @@ long HardwareAbstractionLayer::GetPos(uint8_t addr) {
 
 void HardwareAbstractionLayer::GetPosAndVel(uint8_t addr, int* pos, int* vel) {
     *pos = ServoGetPos(addr);
-    *vel = ServoGetVel(addr);
+    // Velocity is in ticks / servo cycle, and the servo runs at 1953 Hz, translate to clicks/sec.
+    *vel = 1953 * ServoGetVel(addr);
 }
 
 bool HardwareAbstractionLayer::SetGain(uint8_t addr, long Kp, long Kd, long Ki, long IL, long OL, long CL, long EL, long SR, long DC) {

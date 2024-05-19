@@ -18,9 +18,9 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -58,6 +58,7 @@ def generate_launch_description():
             ("~/robot_description", "robot_description"),
         ],
         output="both",
+        arguments=['--ros-args', '--log-level', ['ZebraZeroHardware', ':=', LaunchConfiguration('log_level')]]
     )
     robot_state_pub_node = Node(
         package="robot_state_publisher",
@@ -82,7 +83,10 @@ def generate_launch_description():
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["zebra_zero", "velocity_controller", "-c", "/controller_manager"],
+        arguments=["zebra_zero",
+                   # "velocity_controller",
+                   "trajectory_controller",
+                   "-c", "/controller_manager"],
     )
 
     # Delay rviz start after `joint_state_broadcaster`
@@ -102,6 +106,11 @@ def generate_launch_description():
     )
 
     nodes = [
+        DeclareLaunchArgument(
+            "log_level",
+            default_value = TextSubstitution(text=str("INFO")),
+            description="Logging level"
+        ),
         control_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
@@ -109,4 +118,5 @@ def generate_launch_description():
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
     ]
 
-    return LaunchDescription(nodes)
+    return LaunchDescription(
+        nodes)

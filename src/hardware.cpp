@@ -226,9 +226,13 @@ namespace zebra_zero
         std::vector<double> zeros;
         zeros.assign(6, 0);
 
+        RCLCPP_DEBUG(rclcpp::get_logger("ZebraZeroHardware"),
+                     "Setting joint velocity to %g %g %g %g %g %g",
+                     joint_velocity_command_[0], joint_velocity_command_[1], joint_velocity_command_[2], joint_velocity_command_[3], joint_velocity_command_[4], joint_velocity_command_[5]);
+
         RobotSystem::angles_to_encoders(this->joint_velocity_command_, encoder, zeros);
         RCLCPP_DEBUG(rclcpp::get_logger("ZebraZeroHardware"),
-                     "Setting velocity to %d %d %d %d %d %d", encoder[0], encoder[1], encoder[2], encoder[3], encoder[4], encoder[5]);
+                     "Setting encoder velocity to %d %d %d %d %d %d", encoder[0], encoder[1], encoder[2], encoder[3], encoder[4], encoder[5]);
 
         for (int i = 0; i < modules_; i++)
         {
