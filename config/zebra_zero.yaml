@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 10  # Hz
+    update_rate: 50  # Hz
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -65,10 +65,19 @@ trajectory_controller:
     
     allow_nonzero_velocity_at_trajectory_end: false
 
+    # error tolerance during motion and at goal
+    #constraints:
+    #  first_joint: { trajectory: 0.01, goal: 0.005 }
+    #  second_joint: { trajectory: 0.01, goal: 0.005 }
+    #  third_joint: { trajectory: 0.01, goal: 0.005 }
+    #  fourth_joint: { trajectory: 0.01, goal: 0.005 }
+    #  fifth_joint: { trajectory: 0.01, goal: 0.005 }
+    # sixth_joint: { trajectory: 0.01, goal: 0.005 }
+
     gains: # Required because we're controlling a velocity interface
-      first_joint: {p: 2.0,  d: 0.1, i: 0.0, ff_velocity_scale: 1.0}
-      second_joint: {p: 2.0,  d: 0.1, i: 0.0, ff_velocity_scale: 1.0}
-      third_joint: {p: 2.0,  d: 0.1, i: 0.0, ff_velocity_scale: 1.0}
-      fourth_joint: {p: 2.0,  d: 0.1, i: 0.0, ff_velocity_scale: 1.0}
-      fifth_joint: {p: 2.0,  d: 0.1, i: 0.0, ff_velocity_scale: 1.0}
-      sixth_joint: {p: 2.0,  d: 0.1, i: 0.0, ff_velocity_scale: 1.0}
+      first_joint: {p: 1.0,  d: 0.0, i: 0.0, ff_velocity_scale: 0.1}
+      second_joint: {p: 1.0,  d: 0.0, i: 0.0, ff_velocity_scale: 0.1}
+      third_joint: {p: 1.0,  d: 0.0, i: 0.0, ff_velocity_scale: 0.1}
+      fourth_joint: {p: 1.0,  d: 0.0, i: 0.0, ff_velocity_scale: 0.1}
+      fifth_joint: {p: 1.0,  d: 0.0, i: 0.0, ff_velocity_scale: 0.1}
+      sixth_joint: {p: 1.0,  d: 0.0, i: 0.0, ff_velocity_scale: 0.1}

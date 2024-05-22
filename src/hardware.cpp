@@ -38,7 +38,7 @@ namespace zebra_zero
         {
             return CallbackReturn::ERROR;
         }
-        nmc = new NmcBus("/dev/ttyUSB0", 19200);
+        nmc = new NmcBus("/dev/ttyUSB0", 115200);
         modules_ = 0;
         position_active_ = false;
         velocity_active_ = false;
