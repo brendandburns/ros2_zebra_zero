@@ -108,7 +108,32 @@ void Servo::velocity(int velocity, int acceleration)
     {
         RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to set velocity (%d)", this->_index);
     }
-}        
+}
+
+void Servo::pwm(int pwm)
+{
+    if (!_active) {
+        return;
+    }
+    if (this->moving())
+    {
+        if (!this->stop(false))
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to stop motor (%d)", this->_index);
+            return;
+        }
+    }
+    uint8_t mode = LOAD_PWM | START_NOW;
+    if (pwm < 0)
+    {
+        pwm = -pwm;
+        mode |= REVERSE;
+    }
+    if (!HardwareAbstractionLayer::instance()->LoadTraj(this->_index, mode, 0, 0, 0, pwm))
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Failed to set pwm (%d)", this->_index);
+    }
+}
 
 bool Servo::zero()
 {

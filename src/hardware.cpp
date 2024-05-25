@@ -1,5 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 
+#include <ranges>
 #include <fmt/format.h>
 
 #include "hardware.h"
@@ -34,6 +35,10 @@ namespace zebra_zero
 
     CallbackReturn RobotSystem::on_init(const hardware_interface::HardwareInfo &info)
     {
+        joint_interfaces = {
+            {"position", {}}, {"velocity", {}}, {"effort", {}}
+        };
+
         if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
         {
             return CallbackReturn::ERROR;
@@ -69,12 +74,29 @@ namespace zebra_zero
         joint_position_command_ = home_position_;
         joint_velocity_.assign(6, 0);
         joint_velocity_command_.assign(6, 0);
+        joint_effort_.assign(6, 0);
+        joint_effort_command_.assign(6, 0);
 
         for (const auto &joint : info_.joints)
         {
+            std::set<std::string> interfaces_set;
+
+            // TODO: once there is support for C++ 20, we can do this instead:
+            // auto get_name = [](const auto &interface) { return interface.name; };
+            // std::ranges::transform(joint.state_interfaces, std::inserter(interfaces_set, interfaces_set.begin()), get_name);
+            // std::ranges::transform(joint.command_interfaces, std::inserter(interfaces_set, interfaces_set.begin()), get_name);
+
             for (const auto &interface : joint.state_interfaces)
             {
-                joint_interfaces[interface.name].push_back(joint.name);
+                interfaces_set.insert(interface.name);
+            }
+            for (const auto &interface : joint.command_interfaces)
+            {
+                interfaces_set.insert(interface.name);
+            }
+            for (const auto &interface : interfaces_set)
+            {
+                joint_interfaces[interface].push_back(joint.name);
             }
         }
         return CallbackReturn::SUCCESS;
@@ -134,6 +156,11 @@ namespace zebra_zero
         {
             command_interfaces.emplace_back(joint_name, "velocity", &joint_velocity_command_[ind++]);
         }
+        ind = 0;
+        for (const auto &joint_name : joint_interfaces["effort"])
+        {
+            command_interfaces.emplace_back(joint_name, "effort", &joint_effort_command_[ind++]);
+        }
 
         return command_interfaces;
     }
@@ -174,6 +201,10 @@ namespace zebra_zero
         if (this->velocity_active_)
         {
             move_velocity();
+        }
+        if (this->effort_active_)
+        {
+            move_effort();
         }
 
         return return_type::OK;
@@ -216,6 +247,19 @@ namespace zebra_zero
         encoders[3] = temp3 + temp4;
         encoders[4] = -temp3 + temp4 + 22069.06 * (angles[4] - home[4]) - 11034.53 * (angles[5] - home[5]);
         encoders[5] = -temp3 + 11034.53 * (angles[4] - home[4]) + 5517.265 * (home[3] - angles[3] + angles[5] - home[5]);
+    }
+
+    void RobotSystem::move_effort()
+    {
+        RCLCPP_DEBUG(rclcpp::get_logger("ZebraZeroHardware"),
+                     "Setting joint effort to %g %g %g %g %g %g",
+                     joint_effort_command_[0], joint_effort_command_[1], joint_effort_command_[2], joint_effort_command_[3], joint_effort_command_[4], joint_effort_command_[5]);
+
+        for (int i = 0; i < modules_; i++)
+        {
+            // TODO: should compensate somewhat for elbow here. In practice it doesn't matter that much
+            ((Servo *)nmc->module(i))->pwm(joint_effort_command_[i]);
+        }
     }
 
     void RobotSystem::move_velocity()
@@ -324,7 +368,7 @@ namespace zebra_zero
             throw std::invalid_argument(error_message);
         };
 
-        for (const auto &interface_type : {"position", "velocity"})
+        for (const auto &interface_type : {"position", "velocity", "effort"})
         {
             size_t num_stop_interface =
                 std::count_if(stop_interfaces.begin(), stop_interfaces.end(),
@@ -367,14 +411,20 @@ namespace zebra_zero
         if (start_mode_ == "position")
         {
             position_active_ = true;
-            velocity_active_ = false;
+            effort_active_ = velocity_active_ = false;
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Position mode activated.");
         }
         else if (start_mode_ == "velocity")
         {
-            position_active_ = false;
+            effort_active_ = position_active_ = false;
             velocity_active_ = true;
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Velocity mode activated.");
+        }
+        else if (start_mode_ == "effort")
+        {
+            effort_active_ = true;
+            position_active_ = velocity_active_ = false;
+            RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Effort mode activated.");
         }
         if (stop_mode_ == "position")
         {
@@ -387,6 +437,12 @@ namespace zebra_zero
             velocity_active_ = false;
             // TODO: actually stop robot here.
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Velocity mode deactivated.");
+        }
+        else if (stop_mode_ == "effort")
+        {
+            effort_active_ = false;
+            // TODO: actually stop robot here.
+            RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Effort mode deactivated.");
         }
 
         // clear out mode switches

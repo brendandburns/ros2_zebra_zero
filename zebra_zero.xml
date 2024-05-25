@@ -6,7 +6,6 @@
       Robot hardware plugin for 6 dof robot tutorial.
     </description>
   </class>
-  <!--
   <class name="zebra_zero/RobotController"
          type="zebra_zero::RobotController"
          base_class_type="controller_interface::ControllerInterface">
@@ -14,5 +13,4 @@
       Robot controller plugin for 6 dof robot tutorial.
     </description>
   </class>
-  -->
 </library>

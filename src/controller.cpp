@@ -8,6 +8,9 @@ namespace zebra_zero
 
     controller_interface::CallbackReturn RobotController::on_init()
     {
+        // TODO consider using this instead:
+        // #include <rbdl/addons/urdfreader/urdfreader.h>
+
         // should have error handling
         joint_names_ = auto_declare<std::vector<std::string>>("joints", joint_names_);
         command_interface_types_ =
@@ -52,6 +55,7 @@ namespace zebra_zero
 
     controller_interface::CallbackReturn RobotController::on_configure(const rclcpp_lifecycle::State &)
     {
+/*
           auto callback =
             [this](const std::shared_ptr<trajectory_msgs::msg::JointTrajectory> traj_msg) -> void
           {
@@ -62,17 +66,16 @@ namespace zebra_zero
           joint_command_subscriber_ =
             get_node()->create_subscription<trajectory_msgs::msg::JointTrajectory>(
               "~/joint_trajectory", rclcpp::SystemDefaultsQoS(), callback);
+*/
         return CallbackReturn::SUCCESS;
     }
 
     controller_interface::CallbackReturn RobotController::on_activate(const rclcpp_lifecycle::State &)
     {
           // clear out vectors in case of restart
-          joint_position_command_interface_.clear();
-          joint_velocity_command_interface_.clear();
+          joint_effort_command_interface_.clear();
           joint_position_state_interface_.clear();
-          joint_velocity_state_interface_.clear();
-
+          
           // assign command interfaces
           for (auto & interface : command_interfaces_)
           {
@@ -87,58 +90,30 @@ namespace zebra_zero
         return CallbackReturn::SUCCESS;
     }
 
-    void interpolate_point(
-      const trajectory_msgs::msg::JointTrajectoryPoint & point_1,
-      const trajectory_msgs::msg::JointTrajectoryPoint & point_2,
-      trajectory_msgs::msg::JointTrajectoryPoint & point_interp, double delta)
-    {
-      for (size_t i = 0; i < point_1.positions.size(); i++)
-      {
-        point_interp.positions[i] = delta * point_2.positions[i] + (1.0 - delta) * point_2.positions[i];
-      }
-      for (size_t i = 0; i < point_1.positions.size(); i++)
-      {
-        point_interp.velocities[i] =
-          delta * point_2.velocities[i] + (1.0 - delta) * point_2.velocities[i];
-      }
-    }
-
-    void interpolate_trajectory_point(
-      const trajectory_msgs::msg::JointTrajectory & traj_msg, const rclcpp::Duration & cur_time,
-      trajectory_msgs::msg::JointTrajectoryPoint & point_interp)
-    {
-      double traj_len = traj_msg.points.size();
-      auto last_time = traj_msg.points[traj_len - 1].time_from_start;
-      double total_time = last_time.sec + last_time.nanosec * 1E-9;
-
-      size_t ind = cur_time.seconds() * (traj_len / total_time);
-      ind = std::min(static_cast<double>(ind), traj_len - 2);
-      double delta = cur_time.seconds() - ind * (total_time / traj_len);
-      interpolate_point(traj_msg.points[ind], traj_msg.points[ind + 1], point_interp, delta);
-    }
-
     controller_interface::return_type RobotController::update(
         const rclcpp::Time &time, const rclcpp::Duration & /*period*/)
     {
-          if (new_msg_)
-          {
-            trajectory_msg_ = *traj_msg_external_point_ptr_.readFromRT();
-            start_time_ = time;
-            new_msg_ = false;
-          }
+        auto shoulder = joint_position_state_interface_[1].get().get_value();
+        auto elbow = joint_position_state_interface_[2].get().get_value();
+        auto elbow_actual = shoulder + -elbow;
 
-          if (trajectory_msg_ != nullptr)
-          {
-            interpolate_trajectory_point(*trajectory_msg_, time - start_time_, point_interp_);
-            for (size_t i = 0; i < joint_position_command_interface_.size(); i++)
-            {
-              joint_position_command_interface_[i].get().set_value(point_interp_.positions[i]);
-            }
-            for (size_t i = 0; i < joint_velocity_command_interface_.size(); i++)
-            {
-              joint_velocity_command_interface_[i].get().set_value(point_interp_.velocities[i]);
-            }
-          }
+        // calculate gravity compensation torque given shoulder and elbow angles
+        // TODO: extract these constants out into controller parameters
+        auto elbow_torque = sin(elbow_actual) * 6;
+        auto shoulder_torque = sin(shoulder) * -6.5 - elbow_torque;
+
+        RCLCPP_DEBUG(get_node()->get_logger(), "Shoulder Torque: %f, Elbow Torque: %f", shoulder_torque, elbow_torque);
+
+        // Waist joint is vertical, no gravity compensation needed.
+        joint_effort_command_interface_[0].get().set_value(0);
+        // Compensate for shoulder and elbow
+        joint_effort_command_interface_[1].get().set_value(int(shoulder_torque));
+        joint_effort_command_interface_[2].get().set_value(int(elbow_torque));
+        // For now there's no hand, so no need to compensate in the wrist
+        joint_effort_command_interface_[3].get().set_value(0);
+        joint_effort_command_interface_[4].get().set_value(0);
+        joint_effort_command_interface_[5].get().set_value(0);
+
         return controller_interface::return_type::OK;
     }
 
@@ -166,7 +141,7 @@ namespace zebra_zero
 
 } // namespace zebra_zero
 
-//#include "pluginlib/class_list_macros.hpp"
+#include "pluginlib/class_list_macros.hpp"
 
-//PLUGINLIB_EXPORT_CLASS(
-//    zebra_zero::RobotController, controller_interface::ControllerInterface)
+PLUGINLIB_EXPORT_CLASS(
+    zebra_zero::RobotController, controller_interface::ControllerInterface)
