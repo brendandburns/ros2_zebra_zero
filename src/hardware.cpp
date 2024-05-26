@@ -232,6 +232,9 @@ namespace zebra_zero
         angles[3] = ec3 / 11034.53 - encoders[2] / 20371.83 + home[3];
         angles[4] = ec5 / 22069.06 + ec4 / 44138.12 + encoders[2] / 27162.44 + home[4];
         angles[5] = ec5 / 11034.53 - ec4 / 22069.06 + ec3 / 11034.53 - encoders[2] / 40743.68 + home[5];
+
+        // invert angles[0] because the motor is upside down
+        angles[0] = -angles[0];
     }
 
     void RobotSystem::angles_to_encoders(const std::vector<double> &angles, std::vector<int> &encoders, const std::vector<double> &home)
@@ -247,6 +250,9 @@ namespace zebra_zero
         encoders[3] = temp3 + temp4;
         encoders[4] = -temp3 + temp4 + 22069.06 * (angles[4] - home[4]) - 11034.53 * (angles[5] - home[5]);
         encoders[5] = -temp3 + 11034.53 * (angles[4] - home[4]) + 5517.265 * (home[3] - angles[3] + angles[5] - home[5]);
+    
+        // invert encoders[0] because the motor is upside down
+        encoders[0] = -encoders[0];
     }
 
     void RobotSystem::move_effort()
