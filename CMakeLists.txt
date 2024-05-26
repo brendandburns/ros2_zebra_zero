@@ -27,6 +27,9 @@ set(DEPS
   rclcpp
 )
 
+# Uncomment this to run with a mock robot.
+# add_definitions(-DMOCK_HARDWARE)
+
 foreach(Dependency IN ITEMS ${DEPS})
   find_package(${Dependency} REQUIRED)
 endforeach()
@@ -45,6 +48,7 @@ set_target_properties(nmc PROPERTIES IMPORTED_LOCATION /usr/local/lib/libnmc.so)
 add_library(
     zebra_zero
     SHARED
+    src/mock.cpp
     src/nmc.cpp
     src/servo.cpp
     src/hal.cpp
