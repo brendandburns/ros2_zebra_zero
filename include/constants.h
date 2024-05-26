@@ -13,10 +13,14 @@
 #define LOAD_ACC 4
 #define LOAD_VEL 8
 #define LOAD_POS 16
+#define LOAD_PWM 32
+#define VEL_MODE 64
+#define REVERSE 128
 
 #define MOTOR_OFF 1
 #define AMP_ENABLE 2
 #define STOP_ABRUPT 4
+#define STOP_SMOOTH 0
 #define ADV_FEATURE 8
 
 #define SEND_POS 1

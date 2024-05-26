@@ -81,67 +81,76 @@ bool HardwareAbstractionLayer::Moving(uint8_t addr) {
 
 #else
 
-#include <cstdio>
+#include "mock.h"
+
+using zebra_zero::HardwareAbstractionLayerMock;
+
+std::shared_ptr<HardwareAbstractionLayerMock> HardwareAbstractionLayerMock::instance() {
+    static std::shared_ptr<HardwareAbstractionLayerMock> i{ instantiate() };
+    
+    return i;
+}
+
 
 void HardwareAbstractionLayer::Shutdown()
 {
-    printf("Shutdown!\n");
+    HardwareAbstractionLayerMock::instance()->Shutdown();
 }
 
 uint8_t HardwareAbstractionLayer::Init(char *path, int baudrate) {
-    printf("init called for %s @ %d\n", path, baudrate);
-    return 0;
+    return HardwareAbstractionLayerMock::instance()->Init(path, baudrate);
 }
 
-uint8_t HardwareAbstractionLayer::GetModType(uint8_t) {
-    return 0;
+uint8_t HardwareAbstractionLayer::GetModType(uint8_t addr) {
+    return HardwareAbstractionLayerMock::instance()->GetModType(addr);
 }
 
-bool HardwareAbstractionLayer::DefineStatus(uint8_t, int) {
-    return false;
+bool HardwareAbstractionLayer::DefineStatus(uint8_t addr, int flags) {
+    return HardwareAbstractionLayerMock::instance()->DefineStatus(addr, flags);
 }
 
-void HardwareAbstractionLayer::NoOp(uint8_t) {
-    // pass
+void HardwareAbstractionLayer::NoOp(uint8_t addr) {
+    return HardwareAbstractionLayerMock::instance()->NoOp(addr);
 }
 
-void HardwareAbstractionLayer::InitPath(uint8_t) {
-    // pass
+void HardwareAbstractionLayer::InitPath(uint8_t  addr) {
+    return HardwareAbstractionLayerMock::instance()->InitPath(addr);
 }
 
-bool HardwareAbstractionLayer::StartPathMode(uint8_t, uint8_t) {
-    return false;
+bool HardwareAbstractionLayer::StartPathMode(uint8_t addr, uint8_t leader_addr) {
+    return HardwareAbstractionLayerMock::instance()->StartPathMode(addr, leader_addr);
 }
 
-bool HardwareAbstractionLayer::AddPathpoints(uint8_t, size_t, long*) {
-    return false;
+bool HardwareAbstractionLayer::AddPathpoints(uint8_t addr, size_t npoints, long* points) {
+    return HardwareAbstractionLayerMock::instance()->AddPathpoints(addr, npoints, points);
 }
 
-bool HardwareAbstractionLayer::ResetPos(uint8_t) {
-    return false;
+bool HardwareAbstractionLayer::ResetPos(uint8_t addr) {
+    return HardwareAbstractionLayerMock::instance()->ResetPos(addr);
 }
 
-bool HardwareAbstractionLayer::LoadTraj(uint8_t, int, long, long, long, long) {
-    return false;
+bool HardwareAbstractionLayer::LoadTraj(uint8_t addr, int flags, long pos, long vel, long acc, long pwm) {
+    return HardwareAbstractionLayerMock::instance()->LoadTraj(addr, flags, pos, vel, acc, pwm);
 }
 
-bool HardwareAbstractionLayer::StopMotor(uint8_t, int) {
-    return false;
+bool HardwareAbstractionLayer::StopMotor(uint8_t addr, int flags) {
+    return HardwareAbstractionLayerMock::instance()->StopMotor(addr, flags);
 }
 
-long HardwareAbstractionLayer::GetPos(uint8_t) {
-    return 0;
+long HardwareAbstractionLayer::GetPos(uint8_t addr) {
+    return HardwareAbstractionLayerMock::instance()->GetPos(addr);
 }
 
-void HardwareAbstractionLayer::GetPosAndVel(uint8_t, int*, int*) {
+void HardwareAbstractionLayer::GetPosAndVel(uint8_t addr, int* pos, int* vel) {
+    HardwareAbstractionLayerMock::instance()->GetPosAndVel(addr, pos, vel);
 }
 
-bool HardwareAbstractionLayer::SetGain(uint8_t, long, long, long, long, long, long, long, long, long) {
-    return false;
+bool HardwareAbstractionLayer::SetGain(uint8_t addr, long kp, long ki, long kd, long il, long ol, long cl, long el, long sr, long dc) {
+    return HardwareAbstractionLayerMock::instance()->SetGain(addr, kp, ki, kd, il, ol, cl, el, sr, dc);
 }
 
-bool HardwareAbstractionLayer::Moving(uint8_t) {
-    return false;
+bool HardwareAbstractionLayer::Moving(uint8_t addr) {
+    return HardwareAbstractionLayerMock::instance()->Moving(addr);
 }
 
 #endif // LIBNMC

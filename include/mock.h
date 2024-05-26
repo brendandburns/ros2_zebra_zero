@@ -1,21 +1,38 @@
-#ifndef __HAL_H__
-#define __HAL_H__
+#ifndef __MOCK_H__
+#define __MOCK_H__
 
 #include "constants.h"
+
 #include <memory>
 #include <vector>
 
 namespace zebra_zero {
-    class HardwareAbstractionLayer {
+    class CommandRecord {
+        private:
+            int type;
+            uint8_t addr;
+        
         public:
-            static std::shared_ptr<HardwareAbstractionLayer> instance();
+            CommandRecord(int type, uint8_t addr) : type(type), addr(addr) {}
+            int GetType() { return type; }
+            uint8_t GetAddr() { return addr; }
+    };
+
+        class HardwareAbstractionLayerMock {
+        public:
+            static std::shared_ptr<HardwareAbstractionLayerMock> instance();
 
         private:
-            static HardwareAbstractionLayer* instantiate() {
-                return new HardwareAbstractionLayer();
+            static HardwareAbstractionLayerMock* instantiate() {
+                return new HardwareAbstractionLayerMock();
             }
 
-            HardwareAbstractionLayer() {}
+            HardwareAbstractionLayerMock();
+        
+            char *path;
+            int baudrate;
+            std::vector<CommandRecord> commands;
+            std::vector<long> pos;
         
         public:
             void Shutdown();
@@ -38,4 +55,4 @@ namespace zebra_zero {
     };
 }
 
-#endif // __HAL_H__
+#endif  // __MOCK_H__
