@@ -84,9 +84,13 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["zebra_zero",
-                   # "velocity_controller",
+                   "velocity_controller",
+                   "cartesian_motion_controller",
+                   "zerog_controller",
                    "trajectory_controller",
-                   "-c", "/controller_manager"],
+                   "motion_control_handle",
+                   "-c", "/controller_manager",
+                   "--inactive"],
     )
 
     # Delay rviz start after `joint_state_broadcaster`

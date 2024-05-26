@@ -22,14 +22,17 @@ namespace zebra_zero
         std::vector<double> joint_position_command_;
         std::vector<double> joint_velocity_;
         std::vector<double> joint_velocity_command_;
+        std::vector<double> joint_effort_;
+        std::vector<double> joint_effort_command_;
+        
 
         bool position_active_;
         bool velocity_active_;
+        bool effort_active_;
         std::string stop_mode_;
         std::string start_mode_;
 
-        std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
-            {"position", {}}, {"velocity", {}}};
+        std::unordered_map<std::string, std::vector<std::string>> joint_interfaces;
 
         NmcBus* nmc;
         int     modules_;
@@ -60,6 +63,7 @@ namespace zebra_zero
         void move_direct();
         void move_path(int num_points);
         void move_velocity();
+        void move_effort();
 
         // private members
         // ...

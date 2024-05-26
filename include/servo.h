@@ -13,6 +13,7 @@ class Servo : public Module {
         void read(int *pos, int* velocity);
         void write(int pos, int velocity, int acceleration);
         void velocity(int velocity, int acceleration);
+        void pwm(int pwm);
         bool stop(bool smooth);
 
         bool zero();

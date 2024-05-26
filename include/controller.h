@@ -32,25 +32,21 @@ namespace zebra_zero
         trajectory_msgs::msg::JointTrajectoryPoint point_interp_;
 
         std::vector<std::reference_wrapper<hardware_interface::LoanedCommandInterface>>
-            joint_position_command_interface_;
-        std::vector<std::reference_wrapper<hardware_interface::LoanedCommandInterface>>
-            joint_velocity_command_interface_;
+            joint_effort_command_interface_;
         std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>>
             joint_position_state_interface_;
-        std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>>
-            joint_velocity_state_interface_;
 
         std::unordered_map<
             std::string, std::vector<std::reference_wrapper<hardware_interface::LoanedCommandInterface>> *>
             command_interface_map_ = {
-                {"position", &joint_position_command_interface_},
-                {"velocity", &joint_velocity_command_interface_}};
+                {"effort", &joint_effort_command_interface_}
+            };
 
         std::unordered_map<
             std::string, std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> *>
             state_interface_map_ = {
                 {"position", &joint_position_state_interface_},
-                {"velocity", &joint_velocity_state_interface_}};
+            };
 
     public:
         CONTROLLER_INTERFACE_PUBLIC
