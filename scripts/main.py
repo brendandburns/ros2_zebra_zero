@@ -17,13 +17,13 @@ def main():
     # Add waypoints (JointTrajectoryPoints) to the trajectory
     for i in range(0, 15):
         point = JointTrajectoryPoint()
-        point.positions = [0.0, 1.57 - 0.1 * i, -1.57 + 0.1 * i, 0.0, -1.57 + 0.1 * i, 0.0]  # Joint positions at time t=0
+        point.positions = [0.0 + 0.1 * i, 1.57 - 0.1 * i, -1.57 + 0.1 * i, 0.0, -1.57 + 0.1 * i, 0.0]  # Joint positions at time t=0
         # point.positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         point.time_from_start.sec = int(i * delta_time_nanos / 1e9)
         point.time_from_start.nanosec = int(i * delta_time_nanos % 1e9)
         joint_trajectory.points.append(point)
     point = JointTrajectoryPoint()
-    point.positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    point.positions = [1.57, 0.0, 0.0, 0.0, 0.0, 0.0]
     point.time_from_start.sec = int(16 * delta_time_nanos / 1e9)
     point.time_from_start.nanosec = int(16 * delta_time_nanos % 1e9)
     joint_trajectory.points.append(point)

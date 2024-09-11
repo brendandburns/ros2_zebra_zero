@@ -47,6 +47,7 @@ namespace zebra_zero
         modules_ = 0;
         position_active_ = false;
         velocity_active_ = false;
+        effort_active_ = false;
 
         modules_ = nmc->init();
         if (modules_ == 0)
@@ -416,18 +417,21 @@ namespace zebra_zero
     {
         if (start_mode_ == "position")
         {
+            joint_position_command_ = joint_position_;
             position_active_ = true;
             effort_active_ = velocity_active_ = false;
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Position mode activated.");
         }
         else if (start_mode_ == "velocity")
         {
+            joint_velocity_command_.assign(6, 0);
             effort_active_ = position_active_ = false;
             velocity_active_ = true;
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Velocity mode activated.");
         }
         else if (start_mode_ == "effort")
         {
+            joint_effort_command_.assign(6, 0);
             effort_active_ = true;
             position_active_ = velocity_active_ = false;
             RCLCPP_INFO(rclcpp::get_logger("ZebraZeroHardware"), "Effort mode activated.");
