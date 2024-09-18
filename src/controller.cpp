@@ -91,7 +91,7 @@ namespace zebra_zero
     }
 
     controller_interface::return_type RobotController::update(
-        const rclcpp::Time &time, const rclcpp::Duration & /*period*/)
+        const rclcpp::Time &/*time*/, const rclcpp::Duration & /*period*/)
     {
         auto shoulder = joint_position_state_interface_[1].get().get_value();
         auto elbow = joint_position_state_interface_[2].get().get_value();
