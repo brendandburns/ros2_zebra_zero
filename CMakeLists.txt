@@ -14,7 +14,7 @@ find_package(ament_cmake REQUIRED)
 include_directories(
   include
 #  /home/bburns/src/libnmc
-  /home/bburns/src/serial_test/
+  /home/bburns/src/serial_test/include
   /opt/ros/humble/include
 )
 
