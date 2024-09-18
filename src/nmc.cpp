@@ -2,6 +2,7 @@
 #include "servo.h"
 #include "stepper.h"
 #include "hal.h"
+#include "rclcpp/rclcpp.hpp"
 
 #include <cstring>
 #include <cstdlib>
@@ -32,7 +33,7 @@ unsigned int NmcBus::init() {
                 this->_modules.push_back(new Stepper(i+1));
                 break;
             default:
-                fprintf(stderr, "Unknown module type: %d\n", mod);
+                RCLCPP_ERROR(rclcpp::get_logger("ZebraZeroHardware"), "Unknown module type: %d\n", mod);
         }
     }
     return count;

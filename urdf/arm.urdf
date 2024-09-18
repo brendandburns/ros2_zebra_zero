@@ -195,8 +195,8 @@
     </hardware>
     <joint name="first_joint">
       <command_interface name="position">
-        <param name="min">{-pi}</param>
-        <param name="max">{pi}</param>
+        <param name="min">-3.14</param>
+        <param name="max">3.14</param>
       </command_interface>
       <command_interface name="velocity">
         <param name="min">-1</param>
@@ -215,7 +215,7 @@
     </joint>
     <joint name="second_joint">
       <command_interface name="position">
-        <param name="min">{-pi/2 + 0.5}</param>
+        <param name="min">-1.07</param>
         <param name="max">0.5</param>
       </command_interface>
       <command_interface name="velocity">
@@ -227,7 +227,7 @@
         <param name="max">1</param>
       </command_interface>
       <state_interface name="position">
-        <param name="initial_value">{-pi/2}</param>
+        <param name="initial_value">-1.57</param>
       </state_interface>
       <state_interface name="velocity">
         <param name="initial_value">0.0</param>
@@ -235,8 +235,8 @@
     </joint>
       <joint name="third_joint">
       <command_interface name="position">
-        <param name="min">{-pi/2 + 0.5}</param>
-        <param name="max">{pi/2}</param>
+        <param name="min">-1.07</param>
+        <param name="max">1.57</param>
       </command_interface>
       <command_interface name="velocity">
         <param name="min">-1</param>
@@ -247,7 +247,7 @@
         <param name="max">1</param>
       </command_interface>
       <state_interface name="position">
-        <param name="initial_value">{-pi/2}</param>
+        <param name="initial_value">-1.57</param>
       </state_interface>
       <state_interface name="velocity">
         <param name="initial_value">0.0</param>
@@ -255,8 +255,8 @@
     </joint>
     <joint name="fourth_joint">
       <command_interface name="position">
-        <param name="min">{-pi}</param>
-        <param name="max">{pi}</param>
+        <param name="min">-3.14</param>
+        <param name="max">3.14</param>
       </command_interface>
       <command_interface name="velocity">
         <param name="min">-1</param>
@@ -275,8 +275,8 @@
     </joint>
     <joint name="fifth_joint">
       <command_interface name="position">
-        <param name="min">{-pi}</param>
-        <param name="max">{pi}</param>
+        <param name="min">-3.14</param>
+        <param name="max">3.14</param>
       </command_interface>
       <command_interface name="velocity">
         <param name="min">-1</param>
@@ -287,7 +287,7 @@
         <param name="max">1</param>
       </command_interface>
       <state_interface name="position">
-        <param name="initial_value">{pi/2}</param>
+        <param name="initial_value">1.57</param>
       </state_interface>
       <state_interface name="velocity">
         <param name="initial_value">0.0</param>
@@ -295,8 +295,8 @@
     </joint>
     <joint name="sixth_joint">
       <command_interface name="position">
-        <param name="min">{-pi}</param>
-        <param name="max">{pi}</param>
+        <param name="min">-3.14</param>
+        <param name="max">3.14</param>
       </command_interface>
       <command_interface name="velocity">
         <param name="min">-1</param>

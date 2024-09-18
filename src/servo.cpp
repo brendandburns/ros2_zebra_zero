@@ -10,7 +10,6 @@ Servo::Servo(int ix) : Module(ix, ModuleType::SERVO), _active(false)
     // Retrieve the position data from the local data structure
     HardwareAbstractionLayer::instance()->DefineStatus(this->_index, SEND_POS | SEND_VEL); // | SEND_NPOINTS | SEND_PERROR | SEND_AUX);
 
-
     HardwareAbstractionLayer::instance()->SetGain(this->_index, // axis = 1
                  100,          // Kp = 100
                  1000,         // Kd = 1000

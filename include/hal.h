@@ -4,18 +4,20 @@
 #include "constants.h"
 #include <memory>
 #include <vector>
+#include "nmc_driver.h"
 
 namespace zebra_zero {
     class HardwareAbstractionLayer {
         public:
             static std::shared_ptr<HardwareAbstractionLayer> instance();
+            nmc::Nmc* bus;
 
         private:
             static HardwareAbstractionLayer* instantiate() {
                 return new HardwareAbstractionLayer();
             }
 
-            HardwareAbstractionLayer() {}
+            HardwareAbstractionLayer() : bus(NULL) {}
         
         public:
             void Shutdown();

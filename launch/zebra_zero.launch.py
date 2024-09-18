@@ -85,10 +85,10 @@ def generate_launch_description():
         executable="spawner",
         arguments=["zebra_zero",
                    "velocity_controller",
-                   "cartesian_motion_controller",
+                   # "cartesian_motion_controller",
                    "zerog_controller",
                    "trajectory_controller",
-                   "motion_control_handle",
+                   # "motion_control_handle",
                    "-c", "/controller_manager",
                    "--inactive"],
     )
