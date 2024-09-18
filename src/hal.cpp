@@ -82,8 +82,8 @@ bool HardwareAbstractionLayer::Moving(uint8_t addr) {
 }
 # else
 
-#include "nmc_driver.h"
-#include "nmc_servo.h"
+#include "nmc/driver.h"
+#include "nmc/servo.h"
 
 using namespace nmc;
 

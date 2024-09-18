@@ -4,7 +4,7 @@
 #include "constants.h"
 #include <memory>
 #include <vector>
-#include "nmc_driver.h"
+#include "nmc/driver.h"
 
 namespace zebra_zero {
     class HardwareAbstractionLayer {
