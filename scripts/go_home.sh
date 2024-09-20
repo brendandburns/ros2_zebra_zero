@@ -1,8 +1,7 @@
 #!/bin/bash
 
-ros2 control switch_controllers --deactivate zebra_zero
-ros2 control switch_controllers --deactivate velocity_controller
-ros2 control switch_controllers --deactivate trajectory_controller
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. ${SCRIPT_DIR}/deactivate_controllers.sh
 
 ros2 control switch_controllers --activate zebra_zero
 
