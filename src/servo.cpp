@@ -96,6 +96,7 @@ void Servo::velocity(int velocity, int acceleration)
     int mode = LOAD_VEL | LOAD_ACC | ENABLE_SERVO | VEL_MODE | START_NOW;
     if (velocity < 0) {
         velocity = -velocity;
+        acceleration = -acceleration;
         mode |= REVERSE;
     }
     // See section 4.4.7 of the PIC-SERVO manual. The lower 16 bits are treated as fractional components

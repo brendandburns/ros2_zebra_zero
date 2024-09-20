@@ -30,8 +30,8 @@ namespace zebra_zero {
             bool StartPathMode(uint8_t group_addr, uint8_t leader_addr);
             bool AddPathpoints(uint8_t addr, size_t num, long* pts);
             bool ResetPos(uint8_t addr);
-            bool LoadTraj(uint8_t addr, int flags, long position, long velocity, long acceleration, long pwm);
-            bool StopMotor(uint8_t addr, int flags);
+            bool LoadTraj(uint8_t addr, uint8_t flags, int32_t position, uint32_t velocity, uint32_t acceleration, uint8_t pwm);
+            bool StopMotor(uint8_t addr, uint8_t flags);
             long GetPos(uint8_t addr);
             void GetPosAndVel(uint8_t addr, int* pos, int* vel);
             bool SetGain(uint8_t addr, long Kp, long Kd, long Ki, long IL, long OL, long CL, long EL, long SR, long DC);

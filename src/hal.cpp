@@ -84,6 +84,7 @@ bool HardwareAbstractionLayer::Moving(uint8_t addr) {
 
 #include "nmc/driver.h"
 #include "nmc/servo.h"
+#include "nmc/logging.h"
 
 using namespace nmc;
 
@@ -96,6 +97,7 @@ void HardwareAbstractionLayer::Shutdown()
 
 uint8_t HardwareAbstractionLayer::Init(char *path, int) {
     bus = new nmc::Nmc(std::string(path));
+    nmc::NmcLogging::setLevel(INFO_LEVEL);
     return bus->init();
 }
 
@@ -133,11 +135,11 @@ bool HardwareAbstractionLayer::ResetPos(uint8_t addr) {
     return ((ServoModule*)bus->getModule(addr))->zero();
 }
 
-bool HardwareAbstractionLayer::LoadTraj(uint8_t addr, int flags, long position, long velocity, long acceleration, long pwm) {
+bool HardwareAbstractionLayer::LoadTraj(uint8_t addr, uint8_t flags, int32_t position, uint32_t velocity, uint32_t acceleration, uint8_t pwm) {
     return ((ServoModule*)bus->getModule(addr))->loadTrajectory(flags, position, velocity, acceleration, pwm);
 }
 
-bool HardwareAbstractionLayer::StopMotor(uint8_t addr, int flags) {
+bool HardwareAbstractionLayer::StopMotor(uint8_t addr, uint8_t flags) {
     return ((ServoModule*)bus->getModule(addr))->stop(flags);
 }
 
