@@ -131,7 +131,7 @@ bool HardwareAbstractionLayer::AddPathpoints(uint8_t addr, size_t num, long *pts
         points[i] = pts[i];
     }
     std::shared_ptr<Module> module = bus->getModule(addr);
-    auto result = static_cast<ServoModule*>(module.get())->addPathPoints(points);
+    auto result = static_cast<ServoModule*>(module.get())->addPathPoints(points, 60 /* Hz */);
     return result;
 }
 
