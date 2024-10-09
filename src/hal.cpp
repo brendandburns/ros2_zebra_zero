@@ -228,11 +228,11 @@ bool HardwareAbstractionLayer::ResetPos(uint8_t addr) {
     return HardwareAbstractionLayerMock::instance()->ResetPos(addr);
 }
 
-bool HardwareAbstractionLayer::LoadTraj(uint8_t addr, int flags, long pos, long vel, long acc, long pwm) {
+bool HardwareAbstractionLayer::LoadTraj(uint8_t addr, uint8_t flags, int32_t pos, uint32_t vel, uint32_t acc, uint8_t pwm) {
     return HardwareAbstractionLayerMock::instance()->LoadTraj(addr, flags, pos, vel, acc, pwm);
 }
 
-bool HardwareAbstractionLayer::StopMotor(uint8_t addr, int flags) {
+bool HardwareAbstractionLayer::StopMotor(uint8_t addr, uint8_t flags) {
     return HardwareAbstractionLayerMock::instance()->StopMotor(addr, flags);
 }
 

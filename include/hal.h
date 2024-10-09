@@ -4,7 +4,17 @@
 #include "constants.h"
 #include <memory>
 #include <vector>
+
+#ifdef MOCK_HARDWARE
+namespace nmc
+{
+    class Nmc
+    {
+    };
+}
+#else
 #include "nmc/driver.h"
+#endif
 
 namespace zebra_zero {
     class HardwareAbstractionLayer {
