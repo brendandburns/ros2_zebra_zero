@@ -50,8 +50,7 @@
     <child link="first_link"/>
     <origin rpy="1.57 0 0" xyz="0 -0.045 0"/>
     <axis xyz="0 0 1"/>
-    <!-- TODO: Fix this -->
-    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+    <limit effort="30" velocity="1.0" lower="-3.14" upper="3.14" />
   </joint>
   <link name="second_link">
     <visual>
@@ -76,8 +75,7 @@
     <child link="second_link"/>
     <origin rpy="0 0 0" xyz="0 0 0.24"/>
     <axis xyz="0 1 0"/>
-    <!-- TODO: Fix this -->
-    <limit effort="30" velocity="1.0" lower="-0.7" upper="2.2" />
+    <limit effort="30" velocity="1.0" lower="-0.2" upper="2.2" />
   </joint>
   <link name="third_link">
     <visual>
@@ -102,8 +100,7 @@
     <child link="third_link"/>
     <origin rpy="0 0 0" xyz="0 0 0.30"/>
     <axis xyz="0 -1 0"/>
-    <!-- TODO: Fix this -->
-    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+    <limit effort="30" velocity="1.0" lower="-1.6" upper="0.4" />
   </joint>
   <link name="fourth_link">
     <visual>
@@ -128,8 +125,7 @@
     <child link="fourth_link"/>
     <origin rpy="0 0 0" xyz="0 0 0.1925"/>
     <axis xyz="0 0 1"/>
-    <!-- TODO: Fix this -->
-    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+    <limit effort="30" velocity="1.0" lower="-3.14" upper="3.14" />
   </joint>
   <link name="fifth_link">
     <visual>
@@ -154,8 +150,7 @@
     <child link="fifth_link"/>
     <origin rpy="0 0 0" xyz="0 0 0.045"/>
     <axis xyz="0 1 0"/>
-    <!-- TODO: Fix this -->
-    <limit effort="30" velocity="1.0" lower="-2.2" upper="2.2" />
+    <limit effort="30" velocity="1.0" lower="-1.6" upper="1.6" />
   </joint>
   <link name="sixth_link">
     <visual>
@@ -180,8 +175,7 @@
     <child link="sixth_link"/>
     <origin rpy="0 0 0" xyz="0 0 0.04"/>
     <axis xyz="0 0 1"/>
-    <!-- TODO: Fix this -->
-    <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
+    <limit effort="30" velocity="1.0" lower="-3.14" upper="3.14" />
   </joint>
 
   <ros2_control name="zebra_zero" type="system">
