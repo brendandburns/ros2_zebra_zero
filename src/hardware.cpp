@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 
 #include "real-hardware.h"
+#include "mock-hardware.h"
 #include "hardware.h"
 #include "servo.h"
 
@@ -44,7 +45,16 @@ namespace zebra_zero
         {
             return CallbackReturn::ERROR;
         }
-        zebra_zero::HardwareAbstractionLayer::set_instance(new zebra_zero::RealHardwareAbstractionLayer());
+        // TODO: This is hacky, find a better way to get this information in from a launch file
+        const char* mock = std::getenv("MOCK_ZEBRA_ZERO");
+        if (strcmp(mock, "true") == 0)
+        {
+            zebra_zero::HardwareAbstractionLayer::set_instance(new zebra_zero::MockHardwareAbstractionLayer());
+        }
+        else
+        {
+            zebra_zero::HardwareAbstractionLayer::set_instance(new zebra_zero::RealHardwareAbstractionLayer());
+        }
         nmc = new NmcBus("/dev/ttyUSB0", 115200);
         modules_ = 0;
         position_active_ = false;
