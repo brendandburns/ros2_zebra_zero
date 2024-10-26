@@ -13,9 +13,7 @@ find_package(ament_cmake REQUIRED)
 
 include_directories(
   include
-#  /home/bburns/src/libnmc
-  /home/bburns/src/serial_test/include
-  /opt/ros/humble/include
+  /home/bburns/src/nmc/include
 )
 
 set(DEPS
@@ -47,7 +45,7 @@ endforeach()
 # set_target_properties(nmc PROPERTIES IMPORTED_LOCATION /usr/local/lib/libnmc.so)
 
 add_library(newnmc STATIC IMPORTED)
-set_target_properties(newnmc PROPERTIES IMPORTED_LOCATION /home/bburns/src/serial_test/lib/libnewnmc.so)
+set_target_properties(newnmc PROPERTIES IMPORTED_LOCATION /home/bburns/src/nmc/lib/libnewnmc.so)
 
 add_library(
     zebra_zero
