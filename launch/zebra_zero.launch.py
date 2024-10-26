@@ -89,6 +89,8 @@ def generate_launch_description():
                    "zerog_controller",
                    "trajectory_controller",
                    # "motion_control_handle",
+                   "zerog_controller",
+                   "trajectory_controller",
                    "-c", "/controller_manager",
                    "--inactive"],
     )
