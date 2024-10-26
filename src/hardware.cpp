@@ -3,6 +3,7 @@
 #include <ranges>
 #include <fmt/format.h>
 
+#include "real-hardware.h"
 #include "hardware.h"
 #include "servo.h"
 
@@ -43,6 +44,7 @@ namespace zebra_zero
         {
             return CallbackReturn::ERROR;
         }
+        zebra_zero::HardwareAbstractionLayer::set_instance(new zebra_zero::RealHardwareAbstractionLayer());
         nmc = new NmcBus("/dev/ttyUSB0", 115200);
         modules_ = 0;
         position_active_ = false;

@@ -1,4 +1,5 @@
 #include "nmc.h"
+#include "constants.h"
 #include "servo.h"
 #include "stepper.h"
 #include "hal.h"

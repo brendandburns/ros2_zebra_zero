@@ -56,6 +56,8 @@ add_library(
     src/nmc.cpp
     src/servo.cpp
     src/hal.cpp
+    src/mock-hal.cpp
+    src/real-hal.cpp
     src/hardware.cpp
     src/controller.cpp
 )

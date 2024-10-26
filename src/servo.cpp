@@ -1,6 +1,7 @@
 #include "servo.h"
 
 #include "hal.h"
+#include "constants.h"
 #include "rclcpp/rclcpp.hpp"
 
 using zebra_zero::HardwareAbstractionLayer;

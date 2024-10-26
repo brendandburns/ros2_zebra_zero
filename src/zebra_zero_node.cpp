@@ -1,5 +1,4 @@
 #include "rclcpp/rclcpp.hpp"
-#include "nmc.h"
 
 class MyNode : public rclcpp::Node
 {
