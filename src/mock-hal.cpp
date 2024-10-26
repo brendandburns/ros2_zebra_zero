@@ -13,6 +13,7 @@ std::shared_ptr<HardwareAbstractionLayerMock> HardwareAbstractionLayerMock::inst
     return i;
 }
 
+MockHardwareAbstractionLayer::MockHardwareAbstractionLayer() {}
 
 void MockHardwareAbstractionLayer::Shutdown()
 {
