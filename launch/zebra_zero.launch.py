@@ -40,7 +40,7 @@ def generate_launch_description():
         [
             FindPackageShare("zebra_zero"),
             "config",
-            "zebra_zero.yaml",
+            LaunchConfiguration("controller_config"),
         ]
     )
 #    rviz_config_file = PathJoinSubstitution(
@@ -85,10 +85,10 @@ def generate_launch_description():
         executable="spawner",
         arguments=["zebra_zero",
                    "velocity_controller",
-                   "cartesian_motion_controller",
+                   # "cartesian_motion_controller",
                    "zerog_controller",
                    "trajectory_controller",
-                   "motion_control_handle",
+                   # "motion_control_handle",
                    "-c", "/controller_manager",
                    "--inactive"],
     )
@@ -114,6 +114,11 @@ def generate_launch_description():
             "log_level",
             default_value = TextSubstitution(text=str("INFO")),
             description="Logging level"
+        ),
+        DeclareLaunchArgument(
+            "controller_config",
+            default_value = TextSubstitution(text=str("zebra_zero.yaml")),
+            description="Controller configuration"
         ),
         control_node,
         robot_state_pub_node,
