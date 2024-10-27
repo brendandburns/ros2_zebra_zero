@@ -47,7 +47,7 @@ namespace zebra_zero
         }
         // TODO: This is hacky, find a better way to get this information in from a launch file
         const char* mock = std::getenv("MOCK_ZEBRA_ZERO");
-        if (strcmp(mock, "true") == 0)
+        if (mock && strcmp(mock, "true") == 0)
         {
             zebra_zero::HardwareAbstractionLayer::set_instance(new zebra_zero::MockHardwareAbstractionLayer());
         }
