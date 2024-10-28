@@ -1,4 +1,15 @@
-<robot name="zebra_zero">
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="zebra_zero">
+  <xacro:arg name="ros2_control_hardware_type" default="zebra" />
+  <xacro:macro name="ros2_control" params="ros2_control_hardware_type">
+    <xacro:if value="${ros2_control_hardware_type == 'mock_components'}">
+      <plugin>mock_components/GenericSystem</plugin>
+      <param name="calculate_dynamics">true</param>
+    </xacro:if>
+    <xacro:if value="${ros2_control_hardware_type == 'zebra'}">
+      <plugin>zebra_zero/RobotSystem</plugin>
+    </xacro:if>
+  </xacro:macro>
   <link name="base_link">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -180,7 +191,7 @@
 
   <ros2_control name="zebra_zero" type="system">
     <hardware>
-      <plugin>zebra_zero/RobotSystem</plugin>
+      <xacro:ros2_control ros2_control_hardware_type="$(arg ros2_control_hardware_type)" />
     </hardware>
     <joint name="first_joint">
       <command_interface name="position">

@@ -16,26 +16,35 @@
 # limitations under the License.
 
 import os
+import xacro
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler, SetLaunchConfiguration
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
-
 def generate_launch_description():
-    robot_description_file = os.path.join(
+
+    def create_robot_description(context): 
+        robot_description_file = os.path.join(
             get_package_share_directory('zebra_zero'),
             'urdf',
-            'arm.urdf')
+            'arm.urdf.xacro')
 
-    robot_description_content = open(robot_description_file,'r').read()
+        mappings = {
+            'ros2_control_hardware_type': context.launch_configurations['ros2_control_hardware_type']
+        }
+        document = xacro.process_file(robot_description_file, mappings=mappings)
+        robot_description_content = document.toprettyxml(indent="  ")
+
+        return [SetLaunchConfiguration('robot_desc', robot_description_content)]
+
+    create_robot_description_arg = OpaqueFunction(function=create_robot_description)
+    robot_description = {"robot_description": LaunchConfiguration('robot_desc')}
  
-    robot_description = {"robot_description": robot_description_content}
-
     robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("zebra_zero"),
@@ -43,14 +52,10 @@ def generate_launch_description():
             LaunchConfiguration("controller_config"),
         ]
     )
-#    rviz_config_file = PathJoinSubstitution(
-#        [FindPackageShare("ros2_control_demo_description"), "r6bot/rviz", "view_robot.rviz"]
-#    )
 
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        # parameters=[robot_description, robot_controllers],
         parameters=[robot_controllers],
         remappings=[
             ("/forward_position_controller/commands", "/position_commands"),
@@ -66,14 +71,6 @@ def generate_launch_description():
         output="both",
         parameters=[robot_description],
     )
-#    rviz_node = Node(
-#        package="rviz2",
-#        executable="rviz2",
-#        name="rviz2",
-#        output="log",
-#        arguments=["-d", rviz_config_file],
-#    )
-
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -95,14 +92,6 @@ def generate_launch_description():
                    "--inactive"],
     )
 
-    # Delay rviz start after `joint_state_broadcaster`
-#    delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-#        event_handler=OnProcessExit(
-#            target_action=joint_state_broadcaster_spawner,
-#            on_exit=[rviz_node],
-#        )
-#    )
-
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -122,10 +111,15 @@ def generate_launch_description():
             default_value = TextSubstitution(text=str("zebra_zero.yaml")),
             description="Controller configuration"
         ),
+        DeclareLaunchArgument(
+            'ros2_control_hardware_type',
+            default_value = 'zebra',
+            description='The type of hardware [mock_components, zebra]'
+        ),
+        create_robot_description_arg,
         control_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
-#        delay_rviz_after_joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
     ]
 
