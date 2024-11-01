@@ -231,9 +231,9 @@ namespace zebra_zero
                     "Hardware beyond limits: " << (i + 1) << " ( " << this->joint_position_[i] << ")");
                 for (auto module : nmc->modules())
                 {
-                    static_cast<Servo*>(module)->stop(false);
+                    static_cast<Servo*>(module)->deactivate();
                 }
-                return return_type::OK;
+                return return_type::ERROR;
             }
         }
         if (this->position_active_)
