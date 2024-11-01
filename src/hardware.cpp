@@ -89,7 +89,11 @@ namespace zebra_zero
         joint_velocity_command_.assign(6, 0);
         joint_effort_.assign(6, 0);
         joint_effort_command_.assign(6, 0);
+        minimum_values_.assign(6, 0);
+        maximum_values_.assign(6, 0);
 
+
+        int joint_ix = 0;
         for (const auto &joint : info_.joints)
         {
             std::set<std::string> interfaces_set;
@@ -106,12 +110,26 @@ namespace zebra_zero
             for (const auto &interface : joint.command_interfaces)
             {
                 interfaces_set.insert(interface.name);
+                if (interface.name == "position")
+                {
+                    if (interface.min.size() > 0)
+                    {
+                        minimum_values_[joint_ix] = std::stof(interface.min);
+                    }
+                    if (interface.max.size() > 0)
+                    {
+                        maximum_values_[joint_ix] = std::stof(interface.max);
+                    }
+                }
+
             }
             for (const auto &interface : interfaces_set)
             {
                 joint_interfaces[interface].push_back(joint.name);
             }
+            joint_ix++;
         }
+
         return CallbackReturn::SUCCESS;
     }
 
@@ -206,6 +224,18 @@ namespace zebra_zero
 
     return_type RobotSystem::write(__attribute__((unused)) const rclcpp::Time &time, __attribute__((unused)) const rclcpp::Duration &period)
     {
+        for (int i = 0; i < 6; i++)
+        {
+            if (this->joint_position_[i] < this->minimum_values_[i] || this->joint_position_[i] > this->maximum_values_[i]) {
+                RCLCPP_ERROR_STREAM(rclcpp::get_logger("ZebraZeroHardware"),
+                    "Hardware beyond limits: " << (i + 1) << " ( " << this->joint_position_[i] << ")");
+                for (auto module : nmc->modules())
+                {
+                    static_cast<Servo*>(module)->stop(false);
+                }
+                return return_type::OK;
+            }
+        }
         if (this->position_active_)
         {
             move_direct();

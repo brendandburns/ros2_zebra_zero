@@ -25,6 +25,9 @@ namespace zebra_zero
         std::vector<double> joint_velocity_command_;
         std::vector<double> joint_effort_;
         std::vector<double> joint_effort_command_;
+
+        std::vector<double> minimum_values_;
+        std::vector<double> maximum_values_;
         
 
         bool position_active_;
