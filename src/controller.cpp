@@ -105,16 +105,20 @@ namespace zebra_zero
         RCLCPP_DEBUG(get_node()->get_logger(), "Shoulder Torque: %f, Elbow Torque: %f", shoulder_torque, elbow_torque);
 
         // Waist joint is vertical, no gravity compensation needed.
-        joint_effort_command_interface_[0].get().set_value(0);
+        auto ok = joint_effort_command_interface_[0].get().set_value(0);
         // Compensate for shoulder and elbow
-        joint_effort_command_interface_[1].get().set_value(int(shoulder_torque));
-        joint_effort_command_interface_[2].get().set_value(int(elbow_torque));
+        ok &= joint_effort_command_interface_[1].get().set_value(int(shoulder_torque));
+        ok &= joint_effort_command_interface_[2].get().set_value(int(elbow_torque));
         // For now there's no hand, so no need to compensate in the wrist
-        joint_effort_command_interface_[3].get().set_value(0);
-        joint_effort_command_interface_[4].get().set_value(0);
-        joint_effort_command_interface_[5].get().set_value(0);
+        ok &= joint_effort_command_interface_[3].get().set_value(0);
+        ok &= joint_effort_command_interface_[4].get().set_value(0);
+        ok &= joint_effort_command_interface_[5].get().set_value(0);
 
-        return controller_interface::return_type::OK;
+        if (ok) {
+	  return controller_interface::return_type::OK;
+	}
+	RCLCPP_WARN(get_node()->get_logger(), "Failed to set command interface values");
+	return controller_interface::return_type::ERROR;
     }
 
     controller_interface::CallbackReturn RobotController::on_deactivate(const rclcpp_lifecycle::State &)

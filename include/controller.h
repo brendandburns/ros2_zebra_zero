@@ -7,7 +7,7 @@
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
-#include "realtime_tools/realtime_buffer.h"
+#include "realtime_tools/realtime_buffer.hpp"
 
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
@@ -49,43 +49,32 @@ namespace zebra_zero
             };
 
     public:
-        CONTROLLER_INTERFACE_PUBLIC
         RobotController();
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::return_type update(
             const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::CallbackReturn on_init() override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::CallbackReturn on_configure(
             const rclcpp_lifecycle::State &previous_state) override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::CallbackReturn on_activate(
             const rclcpp_lifecycle::State &previous_state) override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::CallbackReturn on_deactivate(
             const rclcpp_lifecycle::State &previous_state) override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::CallbackReturn on_cleanup(
             const rclcpp_lifecycle::State &previous_state) override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::CallbackReturn on_error(
             const rclcpp_lifecycle::State &previous_state) override;
 
-        CONTROLLER_INTERFACE_PUBLIC
         controller_interface::CallbackReturn on_shutdown(
             const rclcpp_lifecycle::State &previous_state) override;
     };

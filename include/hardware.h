@@ -1,6 +1,5 @@
 #include <vector>
 
-#include "hardware_interface/visibility_control.h"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
@@ -15,7 +14,7 @@ namespace zebra_zero
 
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-    class HARDWARE_INTERFACE_PUBLIC RobotSystem : public hardware_interface::SystemInterface
+    class RobotSystem : public hardware_interface::SystemInterface
     {
     private:
         std::vector<double> home_position_;
